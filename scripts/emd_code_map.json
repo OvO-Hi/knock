@@ -1,0 +1,381 @@
+{
+  "source": "https://raw.githubusercontent.com/vuski/admdongkor/master/ver20261001/HangJeongDong_ver20261001.geojson",
+  "mapping": [
+    {
+      "EMD_CD": "11230510",
+      "EMD_NM": "신사동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230510",
+      "ADM_CD2": "1168051000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230511",
+      "EMD_NM": "개포3동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230511",
+      "ADM_CD2": "1168067500",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230520",
+      "EMD_NM": "논현1동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230520",
+      "ADM_CD2": "1168052100",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230530",
+      "EMD_NM": "논현2동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230530",
+      "ADM_CD2": "1168053100",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230580",
+      "EMD_NM": "삼성1동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230580",
+      "ADM_CD2": "1168058000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230590",
+      "EMD_NM": "삼성2동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230590",
+      "ADM_CD2": "1168059000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230600",
+      "EMD_NM": "대치1동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230600",
+      "ADM_CD2": "1168060000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230630",
+      "EMD_NM": "대치4동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230630",
+      "ADM_CD2": "1168063000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230640",
+      "EMD_NM": "역삼1동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230640",
+      "ADM_CD2": "1168064000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230650",
+      "EMD_NM": "역삼2동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230650",
+      "ADM_CD2": "1168065000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230660",
+      "EMD_NM": "도곡1동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230660",
+      "ADM_CD2": "1168065500",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230670",
+      "EMD_NM": "도곡2동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230670",
+      "ADM_CD2": "1168065600",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230680",
+      "EMD_NM": "개포1동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230680",
+      "ADM_CD2": "1168066000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230710",
+      "EMD_NM": "개포4동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230710",
+      "ADM_CD2": "1168069000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230720",
+      "EMD_NM": "일원본동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230720",
+      "ADM_CD2": "1168072000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230730",
+      "EMD_NM": "일원1동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230730",
+      "ADM_CD2": "1168073000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230750",
+      "EMD_NM": "수서동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230750",
+      "ADM_CD2": "1168075000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230760",
+      "EMD_NM": "세곡동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230760",
+      "ADM_CD2": "1168070000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230770",
+      "EMD_NM": "압구정동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230770",
+      "ADM_CD2": "1168054500",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230780",
+      "EMD_NM": "청담동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230780",
+      "ADM_CD2": "1168056500",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230790",
+      "EMD_NM": "대치2동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230790",
+      "ADM_CD2": "1168061000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "11230800",
+      "EMD_NM": "개포2동",
+      "SGG_NM": "강남구",
+      "ADM_CD": "11230800",
+      "ADM_CD2": "1168067000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010110",
+      "EMD_NM": "신북읍",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010110",
+      "ADM_CD2": "5111025000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010310",
+      "EMD_NM": "동면",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010310",
+      "ADM_CD2": "5111031000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010320",
+      "EMD_NM": "동산면",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010320",
+      "ADM_CD2": "5111032000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010330",
+      "EMD_NM": "신동면",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010330",
+      "ADM_CD2": "5111033000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010340",
+      "EMD_NM": "동내면",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010340",
+      "ADM_CD2": "5111039000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010350",
+      "EMD_NM": "남면",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010350",
+      "ADM_CD2": "5111034000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010360",
+      "EMD_NM": "남산면",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010360",
+      "ADM_CD2": "5111040000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010370",
+      "EMD_NM": "서면",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010370",
+      "ADM_CD2": "5111035000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010380",
+      "EMD_NM": "사북면",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010380",
+      "ADM_CD2": "5111036000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010390",
+      "EMD_NM": "북산면",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010390",
+      "ADM_CD2": "5111038000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010520",
+      "EMD_NM": "교동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010520",
+      "ADM_CD2": "5111052000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010530",
+      "EMD_NM": "조운동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010530",
+      "ADM_CD2": "5111053000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010540",
+      "EMD_NM": "약사명동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010540",
+      "ADM_CD2": "5111054500",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010570",
+      "EMD_NM": "근화동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010570",
+      "ADM_CD2": "5111057000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010580",
+      "EMD_NM": "소양동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010580",
+      "ADM_CD2": "5111058000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010600",
+      "EMD_NM": "후평1동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010600",
+      "ADM_CD2": "5111060000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010610",
+      "EMD_NM": "후평2동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010610",
+      "ADM_CD2": "5111061000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010620",
+      "EMD_NM": "후평3동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010620",
+      "ADM_CD2": "5111061100",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010630",
+      "EMD_NM": "효자1동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010630",
+      "ADM_CD2": "5111062000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010640",
+      "EMD_NM": "효자2동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010640",
+      "ADM_CD2": "5111063000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010650",
+      "EMD_NM": "효자3동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010650",
+      "ADM_CD2": "5111064000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010660",
+      "EMD_NM": "석사동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010660",
+      "ADM_CD2": "5111065000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010670",
+      "EMD_NM": "퇴계동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010670",
+      "ADM_CD2": "5111066000",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010680",
+      "EMD_NM": "강남동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010680",
+      "ADM_CD2": "5111067500",
+      "method": "adm_cd"
+    },
+    {
+      "EMD_CD": "32010710",
+      "EMD_NM": "신사우동",
+      "SGG_NM": "춘천시",
+      "ADM_CD": "32010710",
+      "ADM_CD2": "5111070500",
+      "method": "adm_cd"
+    }
+  ]
+}
