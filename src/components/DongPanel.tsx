@@ -1,5 +1,6 @@
 "use client";
 // 동 상세 패널 (CLAUDE.md §4.3). 권장 조치·연결 자원·브리프는 3·5단계에서 추가.
+import { useSyncExternalStore } from "react";
 import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { DongDTO } from "@/lib/api-types";
 import type { ClusterProfile, InterventionRule, LevelPolicy } from "@/lib/data";
@@ -45,16 +46,16 @@ interface BarDatum {
 
 const ROW_H = 46;
 
-function YTick({ x, y, payload, data }: { x?: number | string; y?: number | string; payload?: { index: number }; data: BarDatum[] }) {
+function YTick({ x, y, payload, data, small }: { x?: number | string; y?: number | string; payload?: { index: number }; data: BarDatum[]; small?: boolean }) {
   const d = payload ? data[payload.index] : undefined;
   if (!d || x === undefined || y === undefined) return null;
   return (
     <g transform={`translate(${x},${y})`}>
-      <text x={-8} y={d.meta.lowIsRisk ? -2 : 4} textAnchor="end" fontSize={13} fill="#222">
+      <text x={-8} y={d.meta.lowIsRisk ? -2 : 4} textAnchor="end" fontSize={small ? 11 : 13} fill="#222">
         {d.meta.label}
       </text>
       {d.meta.lowIsRisk && (
-        <text x={-8} y={12} textAnchor="end" fontSize={10.5} fill="#888">
+        <text x={-8} y={12} textAnchor="end" fontSize={small ? 9.5 : 10.5} fill="#888">
           값이 낮을수록 위험
         </text>
       )}
@@ -80,7 +81,22 @@ function VarTooltip({ active, payload }: { active?: boolean; payload?: { payload
   );
 }
 
+// 좁은 화면(<480px)에서는 라벨 폭·오른쪽 여백을 줄여 막대 영역을 확보
+const NARROW = "(max-width: 479px)";
+function useNarrow() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia(NARROW);
+      mq.addEventListener("change", cb);
+      return () => mq.removeEventListener("change", cb);
+    },
+    () => window.matchMedia(NARROW).matches,
+    () => false,
+  );
+}
+
 function VariableBars({ dong }: { dong: DongDTO }) {
+  const narrow = useNarrow();
   const data: BarDatum[] = VARIABLE_META.map((meta) => ({
     meta,
     score: dong[`${meta.code}_Q`],
@@ -89,15 +105,15 @@ function VariableBars({ dong }: { dong: DongDTO }) {
   return (
     <div style={{ height: data.length * ROW_H + 28 }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 110, bottom: 4, left: 0 }} barCategoryGap={10}>
+        <BarChart data={data} layout="vertical" margin={{ top: 4, right: narrow ? 92 : 110, bottom: 4, left: 0 }} barCategoryGap={10}>
           <XAxis type="number" domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} fontSize={11} tickLine={false} />
           <YAxis
             type="category"
             dataKey={(d: BarDatum) => d.meta.label}
-            width={150}
+            width={narrow ? 124 : 150}
             tickLine={false}
             axisLine={false}
-            tick={(p) => <YTick x={p.x} y={p.y} payload={p.payload} data={data} />}
+            tick={(p) => <YTick x={p.x} y={p.y} payload={p.payload} data={data} small={narrow} />}
           />
           <Tooltip content={<VarTooltip />} cursor={{ fill: "#f3f3f0" }} />
           <Bar dataKey="score" radius={[0, 4, 4, 0]} isAnimationActive={false}>

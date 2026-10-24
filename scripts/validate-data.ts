@@ -80,6 +80,9 @@ try {
   check("FLAG 값 유효 · 경계 = P_OWN<0.5", !badFlag.length && !boundaryMiss.length,
     [...badFlag.map((s) => `잘못된 FLAG ${s.EMD_CD}`), ...boundaryMiss.map((d) => `경계 불일치 ${d.EMD_NM}`)].join(", "));
 
+  const tails = [...data.subtypes, ...data.rules].filter((r) => /\)\s*$/.test(r.SUBTYPE_NM)).map((r) => r.SUBTYPE_NM);
+  check("SUBTYPE_NM 괄호 꼬리 없음", !tails.length, [...new Set(tails)].join(", "));
+
   const lv = data.levelPolicy.map((l) => l.RISK_LEVEL).sort().join(",");
   check("level_policy 5행 (1~5)", lv === "1,2,3,4,5", lv);
 

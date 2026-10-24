@@ -9,7 +9,7 @@ test("동 브리프: 섹션·슬롯·수치가 결과표 값", () => {
   }
   assert.ok(b.template.includes(SUMMARY_SLOT) && b.template.includes(MEMO_SLOT));
   assert.ok(b.template.includes("1,598명"));
-  assert.match(b.template, /47개 동 중 \d+위/);
+  assert.match(b.template, /종합점수 47개 동 중 \d+위 · 우선순위\(단계→5060 인구\) 전체 \d+위, 춘천시 \d+위/);
   assert.ok(b.template.includes("이번 분기"));
   const filled = fillBrief(b, b.ruleSummary, b.ruleMemo);
   assert.ok(!filled.includes("{{"));

@@ -48,7 +48,7 @@ export default function PriorityPanel() {
   const toggle = (f: Flag) => setExclude((xs) => (xs.includes(f) ? xs.filter((x) => x !== f) : [...xs, f]));
 
   return (
-    <section className="flex min-h-0 flex-col border-b border-neutral-200 bg-[#fbfbf9]">
+    <section className="flex min-h-0 flex-1 flex-col bg-[#fbfbf9]">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-3 py-2">
         <h3 className="font-semibold">이번 분기 우선 동</h3>
         <span className="text-xs text-neutral-500">{REGION_LABEL[region]} · 단계↓ → 50·60대 인구↓</span>
@@ -77,7 +77,7 @@ export default function PriorityPanel() {
         </div>
       </div>
 
-      <div className="max-h-[38vh] min-h-0 overflow-auto px-3">
+      <div className="min-h-0 flex-1 overflow-auto px-3">
         {error && <p className="py-2 text-red-700">{error}</p>}
         {rows && (
           <table className="w-full text-left text-[13px] tabular-nums">
@@ -123,7 +123,7 @@ export default function PriorityPanel() {
         {rows?.length === 0 && <p className="py-2 text-neutral-500">조건에 맞는 동이 없습니다.</p>}
       </div>
 
-      <div className="flex justify-end px-3 py-2">
+      <div className="flex justify-end border-t border-neutral-200 px-3 py-2">
         <button
           disabled={!rows?.length}
           onClick={() =>

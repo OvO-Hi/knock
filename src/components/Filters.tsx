@@ -3,6 +3,7 @@
 import { GROUPS, LEVELS } from "@/lib/constants";
 import { GROUP_COLOR, GROUP_NAME, LEVEL_COLOR, PRIORITY_LABEL, REGION_LABEL, textOn, type Region } from "@/lib/labels";
 import { useUi } from "@/store/ui";
+import DemoMenu from "./DemoMenu";
 import TopNSelect from "./TopNSelect";
 
 const REGIONS: Region[] = ["all", "11230", "32010"];
@@ -106,6 +107,7 @@ export default function Filters() {
         <TopNSelect disabled={!highlightOn} label="강조할 상위 동 수" />
         개 동 강조
       </label>
+      <DemoMenu />
     </div>
   );
 }

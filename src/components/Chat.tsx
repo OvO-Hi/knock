@@ -12,13 +12,24 @@ interface Msg {
   role: "user" | "assistant";
   text: string;
   tools: string[];
-  mode?: "ai" | "fallback";
+  mode?: "ai" | "fallback" | "cache";
+  /** 사후 검사로 고친 위반 수 */
+  guardFixed?: number;
   status: "streaming" | "done" | "error";
   error?: string;
 }
 
 let nextId = 1;
 const MAX_INPUT = 2000;
+const DEFAULT_H = 360;
+const MIN_H = 200;
+const H_KEY = "knock.chatHeight";
+
+const maxHeight = () => {
+  const header = document.querySelector("header")?.getBoundingClientRect().height ?? 60;
+  return Math.max(MIN_H, window.innerHeight - header - 120);
+};
+const clampH = (h: number) => Math.round(Math.max(MIN_H, Math.min(maxHeight(), h)));
 
 /** SSE 응답을 이벤트 단위로 읽는다 */
 async function readSse(res: Response, on: (event: string, data: Record<string, unknown>) => void) {
@@ -47,8 +58,48 @@ type HastNode = { type: string; value?: string; children?: HastNode[] };
 const nodeText = (n?: HastNode): string => (!n ? "" : n.type === "text" ? (n.value ?? "") : (n.children ?? []).map(nodeText).join(""));
 
 export default function Chat({ data }: { data: DashboardData | null }) {
-  const { chatOpen, setChatOpen, chatDraft, region, levels, groups, selectedEmd, focusOnMap } = useUi();
+  const { chatOpen, setChatOpen, chatDraft, region, levels, groups, selectedEmd, focusOnMap, demo } = useUi();
+  const [height, setHeight] = useState(DEFAULT_H);
+
+  // 저장된 높이 복원 (localStorage 는 실패할 수 있다)
+  useEffect(() => {
+    try {
+      const saved = Number(localStorage.getItem(H_KEY));
+      if (saved) setHeight(clampH(saved));
+    } catch {}
+  }, []);
+  const saveHeight = (h: number) => {
+    setHeight(h);
+    try {
+      localStorage.setItem(H_KEY, String(h));
+    } catch {}
+  };
+
+  const startDrag = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = height;
+    let last = startH;
+    const move = (ev: PointerEvent) => {
+      last = clampH(startH + (startY - ev.clientY));
+      setHeight(last);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      saveHeight(last);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
   const [messages, setMessages] = useState<Msg[]>([]);
+  // 데모 시나리오가 바뀌면 새 대화로
+  const [demoId, setDemoId] = useState<string | null>(null);
+  if ((demo?.id ?? null) !== demoId) {
+    setDemoId(demo?.id ?? null);
+    if (demo) setMessages([]);
+  }
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -154,6 +205,9 @@ export default function Chat({ data }: { data: DashboardData | null }) {
           if (event === "meta") patch(bot.id, (m) => ({ ...m, mode: d.mode as Msg["mode"] }));
           else if (event === "tool") patch(bot.id, (m) => ({ ...m, tools: [...m.tools, String(d.label ?? d.name)] }));
           else if (event === "text") patch(bot.id, (m) => ({ ...m, text: m.text + String(d.delta) }));
+          else if (event === "final") patch(bot.id, (m) => ({ ...m, text: String(d.text) }));
+          else if (event === "guard")
+            patch(bot.id, (m) => ({ ...m, guardFixed: Array.isArray(d.violations) ? d.violations.length : 0 }));
           else if (event === "error") failed = String(d.message);
         });
         patch(bot.id, (m) => (failed ? { ...m, status: "error", error: failed } : { ...m, status: "done" }));
@@ -173,7 +227,10 @@ export default function Chat({ data }: { data: DashboardData | null }) {
     send(user.text, messages.slice(0, i - 1));
   };
 
-  const chips = [
+  const asked = new Set(messages.filter((m) => m.role === "user").map((m) => m.text));
+  const chips = demo
+    ? demo.questions
+    : [
     "이번 분기 우선 동은?",
     selected ? `${displayName(selected)}은 왜 이 단계인가요?` : null,
     "HH1과 HH2는 뭐가 달라요?",
@@ -198,7 +255,18 @@ export default function Chat({ data }: { data: DashboardData | null }) {
   }
 
   return (
-    <footer className="flex h-[360px] shrink-0 flex-col border-t border-neutral-200 bg-white">
+    <footer style={{ height }} className="relative flex shrink-0 flex-col border-t border-neutral-200 bg-white">
+      <div
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label="대화창 높이 조절 (더블클릭: 기본 높이)"
+        title="드래그해서 높이 조절 · 더블클릭하면 기본 높이"
+        onPointerDown={startDrag}
+        onDoubleClick={() => saveHeight(clampH(DEFAULT_H))}
+        className="absolute -top-1.5 left-0 z-10 flex h-3 w-full cursor-ns-resize touch-none items-center justify-center"
+      >
+        <span className="h-1 w-12 rounded-full bg-neutral-300" />
+      </div>
       <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-2">
         <span className="font-semibold">에이전트 대화</span>
         <button onClick={() => setChatOpen(false)} className="text-neutral-500 hover:text-neutral-900">
@@ -215,6 +283,14 @@ export default function Chat({ data }: { data: DashboardData | null }) {
             </div>
           ) : (
             <div key={m.id} className="max-w-[85%] rounded-xl bg-[#f6f6f3] px-3 py-2">
+              {m.mode === "cache" && (
+                <span className="mb-1 inline-block rounded bg-sky-100 px-1.5 py-0.5 text-[11px] text-sky-800">(데모 캐시 답변)</span>
+              )}
+              {!!m.guardFixed && m.status === "done" && (
+                <span className="mb-1 ml-1 inline-block rounded bg-neutral-200 px-1.5 py-0.5 text-[11px] text-neutral-700">
+                  결과표 대조로 {m.guardFixed}건 수정
+                </span>
+              )}
               {m.mode === "fallback" && (
                 <span className="mb-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[11px] text-amber-800">
                   (규칙 기반 답변 — AI 연결 안 됨)
@@ -246,14 +322,21 @@ export default function Chat({ data }: { data: DashboardData | null }) {
       </div>
 
       <div className="flex flex-wrap gap-1.5 px-4 pb-2">
-        {chips.map((c) => (
+        {demo && <span className="self-center text-xs font-semibold text-sky-800">데모 {demo.id} 질문:</span>}
+        {chips.map((c, i) => (
           <button
             key={c}
             disabled={busy}
             onClick={() => send(c, messages)}
-            className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs hover:bg-neutral-50 disabled:opacity-40"
+            className={`rounded-full border px-2.5 py-0.5 text-xs disabled:opacity-40 ${
+              demo
+                ? asked.has(c)
+                  ? "border-neutral-200 text-neutral-400"
+                  : "border-sky-400 bg-sky-50 text-sky-900 hover:bg-sky-100"
+                : "border-neutral-300 hover:bg-neutral-50"
+            }`}
           >
-            {c}
+            {demo ? `${i + 1}. ${c}` : c}
           </button>
         ))}
       </div>

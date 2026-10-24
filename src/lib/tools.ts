@@ -225,7 +225,11 @@ function explain_dong(input: Record<string, unknown>): ToolResult {
   });
 
   return {
-    data: { EMD_CD: d.EMD_CD, 이름: displayName(d), 지역: d.SGG_NM, RISK_LEVEL: d.RISK_LEVEL, GROUP: d.GROUP, POP_SCORE: d.POP_SCORE, REG_SCORE: d.REG_SCORE, TOTAL_SCORE: d.TOTAL_SCORE, 변수: variables },
+    data: {
+      표기_규칙: "원값은 소수 그대로 인용 (남성 비율 0.557을 55.7%로 바꾸지 않는다)",
+      EMD_CD: d.EMD_CD, 이름: displayName(d), 지역: d.SGG_NM, RISK_LEVEL: d.RISK_LEVEL, GROUP: d.GROUP,
+      POP_SCORE: d.POP_SCORE, REG_SCORE: d.REG_SCORE, TOTAL_SCORE: d.TOTAL_SCORE, 변수: variables,
+    },
     sources: [
       `dong_cluster.csv(${VARIABLES.join(", ")}, *_Q, REASON_1, REASON_2)`,
       "variable_dictionary.md(계산식, 위험 방향, 쉬운 말)",
@@ -355,7 +359,12 @@ function prioritize(input: Record<string, unknown>): ToolResult {
 function get_validation(): ToolResult {
   const k = getData();
   return {
-    data: { 검증_요약: k.validation, 민감도_분석: k.sensitivity, SHAP_중요도: k.shap },
+    data: {
+      표기_규칙: "수치는 아래 값 그대로 소수로 인용 (0.807을 80%로 바꾸지 않는다). 실루엣 0.435는 '보통'.",
+      검증_요약: k.validation,
+      민감도_분석: k.sensitivity,
+      SHAP_중요도: k.shap,
+    },
     sources: ["validation_summary.csv", "sensitivity_final.csv", "shap_importance.csv"],
   };
 }

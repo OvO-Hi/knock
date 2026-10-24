@@ -15,6 +15,8 @@ import FilterSummary from "./FilterSummary";
 import PriorityPanel from "./PriorityPanel";
 import SiteHeader from "./SiteHeader";
 
+const TAB_LABEL = { map: "지도", list: "리스트", priority: "우선 동" } as const;
+
 const Map = dynamic(() => import("./Map"), {
   ssr: false,
   loading: () => <div className="grid h-full place-items-center text-neutral-500">지도 불러오는 중…</div>,
@@ -43,7 +45,7 @@ export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
         {/* ① 지도 + 리스트 */}
         <section className="flex h-[65vh] flex-col overflow-hidden rounded-xl bg-white shadow-sm md:h-auto md:w-[55%]">
           <div role="tablist" className="flex gap-1 border-b border-neutral-100 px-3 pt-2">
-            {(["map", "list"] as const).map((t) => (
+            {(["map", "list", "priority"] as const).map((t) => (
               <button
                 key={t}
                 role="tab"
@@ -51,7 +53,7 @@ export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
                 onClick={() => setLeftTab(t)}
                 className={`rounded-t-lg px-3 py-1.5 ${leftTab === t ? "border-b-2 border-neutral-900 font-semibold" : "text-neutral-500"}`}
               >
-                {t === "map" ? "지도" : "리스트"}
+                {TAB_LABEL[t]}
               </button>
             ))}
           </div>
@@ -64,11 +66,13 @@ export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
                   <Map data={data} />
                 </div>
                 {leftTab === "list" && (
+                  <div className="absolute inset-0 z-[1100] bg-white">
+                    <DongList dongs={data.dongs} />
+                  </div>
+                )}
+                {leftTab === "priority" && (
                   <div className="absolute inset-0 z-[1100] flex flex-col bg-white">
                     <PriorityPanel />
-                    <div className="min-h-0 flex-1">
-                      <DongList dongs={data.dongs} />
-                    </div>
                   </div>
                 )}
               </>

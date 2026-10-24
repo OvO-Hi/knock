@@ -47,8 +47,13 @@ export function buildDongBrief(emdCd: string): BriefDraft {
   const ex = call("explain_dong", { emd_cd: g.EMD_CD });
   const act = call("recommend_actions", { emd_cd: g.EMD_CD });
   const res = call("get_resources", { emd_cd: g.EMD_CD });
-  const all = call("prioritize", { n: 47 });
-  const order = (all.우선_동 as Row[]).find((x) => x.EMD_CD === g.EMD_CD)?.순서;
+  // 순위 두 가지: 종합점수 순위(동점은 같은 순위) / 우선순위(단계→5060 인구) 전체·지역 내 순서
+  const byTotal = (call("list_dongs", { sort: "total" }).동 as Row[]) ?? [];
+  const totalRank = byTotal.filter((x) => Number(x.TOTAL_SCORE) > Number(g.TOTAL_SCORE)).length + 1;
+  const orderOf = (rows: Row[]) => rows.find((x) => x.EMD_CD === g.EMD_CD)?.순서;
+  const order = orderOf(call("prioritize", { n: 47 }).우선_동 as Row[]);
+  const regionOrder = orderOf(call("prioritize", { region: g.SGG_CD, n: 47 }).우선_동 as Row[]);
+  const regionCount = byTotal.filter((x) => x.지역 === g.SGG_NM).length;
 
   const name = String(g.이름);
   const rule = act.대응_규칙 as Row | null;
@@ -75,9 +80,9 @@ export function buildDongBrief(emdCd: string): BriefDraft {
     SUMMARY_SLOT,
     "",
     "## 핵심 수치",
-    "| 종합 점수 | 50·60대 인구 | 먼저 살필 순서 |",
+    "| 종합 점수 | 50·60대 인구 | 순위 |",
     "|---|---|---|",
-    `| ${one(g.TOTAL_SCORE)} (인구축 ${one(g.POP_SCORE)} + 지역축 ${one(g.REG_SCORE)}) | ${fmt(g.POP_5060)}명 (총 ${fmt(g.TOT_POP_CNT)}명) | 47개 동 중 ${order ?? "-"}위 |`,
+    `| ${one(g.TOTAL_SCORE)} (인구축 ${one(g.POP_SCORE)} + 지역축 ${one(g.REG_SCORE)}) | ${fmt(g.POP_5060)}명 (총 ${fmt(g.TOT_POP_CNT)}명) | 종합점수 47개 동 중 ${totalRank}위 · 우선순위(단계→5060 인구) 전체 ${order ?? "-"}위, ${g.SGG_NM} ${regionOrder ?? "-"}위 (${regionCount}개 동 중) |`,
     "",
     "## 왜 위험한가",
     "| 변수 | 단계점수 (1~5) | 원값 | 위험 방향 | SHAP 판별 근거 |",
@@ -116,7 +121,7 @@ export function buildDongBrief(emdCd: string): BriefDraft {
     .join("\n");
 
   const ruleSummary = [
-    `${name}은 위험도 ${g.RISK_LEVEL}단계(${g.PRIORITY_LABEL})·${g.GROUP} ${GROUP_NAME[g.GROUP as Group]} 동으로, 47개 동 중 ${order ?? "-"}번째로 먼저 살필 곳입니다.`,
+    `${name}은 위험도 ${g.RISK_LEVEL}단계(${g.PRIORITY_LABEL})·${g.GROUP} ${GROUP_NAME[g.GROUP as Group]} 동입니다. 종합점수는 47개 동 중 ${totalRank}위이고, 우선순위(단계→5060 인구)로는 전체 ${order ?? "-"}번째·${g.SGG_NM} 안에서 ${regionOrder ?? "-"}번째로 먼저 살필 곳입니다.`,
     reasons.length
       ? `군집 판별 근거는 ${reasons.map((r) => `${r.label.replace(/^\d-\d\s+/, "")}(${r.side} 쪽)`).join("·")} 신호입니다.`
       : "",

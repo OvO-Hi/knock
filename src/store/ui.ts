@@ -4,7 +4,15 @@ import { GROUPS, type Group, type RiskLevel } from "@/lib/constants";
 import type { Region } from "@/lib/labels";
 
 export type ColorMode = "level" | "group";
-export type LeftTab = "map" | "list";
+export type LeftTab = "map" | "list" | "priority";
+
+export interface Scenario {
+  id: string;
+  title: string;
+  persona: string;
+  state: { region: Region; levels: RiskLevel[]; groups: Group[]; selectedEmd: string | null; tab: LeftTab };
+  questions: string[];
+}
 
 interface UiState {
   region: Region;
@@ -37,6 +45,11 @@ interface UiState {
   chatDraft: { text: string; seq: number } | null;
   /** 대화창 펼치고 질문을 입력창에 넣는다 (전송은 사용자가) */
   askInChat: (text: string) => void;
+
+  /** 데모 모드: 선택한 시나리오 (추천 칩이 이 질문들로 바뀐다) */
+  demo: Scenario | null;
+  applyScenario: (s: Scenario) => void;
+  exitDemo: () => void;
 
   /** 열려 있는 브리프 모달 */
   brief: BriefRequest | null;
@@ -84,6 +97,21 @@ export const useUi = create<UiState>((set) => ({
   setChatOpen: (chatOpen) => set({ chatOpen }),
   chatDraft: null,
   askInChat: (text) => set((s) => ({ chatOpen: true, chatDraft: { text, seq: (s.chatDraft?.seq ?? 0) + 1 } })),
+
+  demo: null,
+  applyScenario: (sc) =>
+    set((s) => ({
+      demo: sc,
+      region: sc.state.region,
+      levels: new Set(sc.state.levels),
+      groups: new Set(sc.state.groups),
+      selectedEmd: sc.state.selectedEmd,
+      leftTab: sc.state.tab,
+      focus: sc.state.selectedEmd ? { emd: sc.state.selectedEmd, seq: (s.focus?.seq ?? 0) + 1 } : s.focus,
+      chatOpen: true,
+      brief: null,
+    })),
+  exitDemo: () => set({ demo: null }),
 
   brief: null,
   openBrief: (brief) => set({ brief }),

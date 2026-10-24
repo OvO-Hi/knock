@@ -117,6 +117,13 @@ function DongLayer({
     if (leftTab === "map") map.invalidateSize();
   }, [leftTab, map]);
 
+  // 대화창 높이 조절·창 크기 변경 등으로 지도 영역이 바뀌면 크기 재계산
+  useEffect(() => {
+    const ro = new ResizeObserver(() => map.invalidateSize({ debounceMoveend: true }));
+    ro.observe(map.getContainer());
+    return () => ro.disconnect();
+  }, [map]);
+
   return (
     <GeoJSON ref={geoRef} data={data.geo} onEachFeature={onEachFeature} style={initialStyle} />
   );
