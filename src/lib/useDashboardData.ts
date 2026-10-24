@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { FeatureCollection, Geometry } from "geojson";
 import type { DongDTO, DongsResponse, EmdFeatureProps, ResourcesResponse, RulesResponse } from "./api-types";
 import type { ClusterProfile, InterventionRule, LevelPolicy, WelfareResource } from "./data";
+import { toastError } from "@/store/toast";
 
 export interface DashboardData {
   dongs: DongDTO[];
@@ -48,6 +49,7 @@ export function useDashboardData() {
     cache.then(setData, (e: Error) => {
       cache = null;
       setError(e.message);
+      toastError(`데이터를 불러오지 못했습니다 (${e.message}). 새로고침해 주세요.`);
     });
   }, []);
   return { data, error };

@@ -3,7 +3,6 @@
 import { GROUPS, LEVELS } from "@/lib/constants";
 import { GROUP_COLOR, GROUP_NAME, LEVEL_COLOR, PRIORITY_LABEL, REGION_LABEL, textOn, type Region } from "@/lib/labels";
 import { useUi } from "@/store/ui";
-import DemoMenu from "./DemoMenu";
 import TopNSelect from "./TopNSelect";
 
 const REGIONS: Region[] = ["all", "11230", "32010"];
@@ -56,12 +55,12 @@ function Chip({ on, color, onClick, children, title }: {
   );
 }
 
-export default function Filters() {
+export default function Filters({ stacked = false }: { stacked?: boolean }) {
   const { region, setRegion, levels, toggleLevel, groups, toggleGroup, colorMode, setColorMode, highlightOn, setHighlightOn } =
     useUi();
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className={stacked ? "flex flex-col items-start gap-4" : "flex flex-wrap items-center gap-x-4 gap-y-1.5"}>
       <Segmented
         label="지역"
         value={region}
@@ -107,7 +106,6 @@ export default function Filters() {
         <TopNSelect disabled={!highlightOn} label="강조할 상위 동 수" />
         개 동 강조
       </label>
-      <DemoMenu />
     </div>
   );
 }

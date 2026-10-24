@@ -24,10 +24,34 @@ const MAX_INPUT = 2000;
 const DEFAULT_H = 360;
 const MIN_H = 200;
 const H_KEY = "knock.chatHeight";
+const POS_KEY = "knock.chatPos";
 
+type ChatPos = "left" | "center" | "right";
+const POS_LABEL: Record<ChatPos, string> = { left: "⇤ 왼쪽", center: "가운데", right: "오른쪽 ⇥" };
+// 720px 이상에서만 좌·중·우 정렬 (그 아래는 전체 폭)
+const POS_CLASS: Record<ChatPos, string> = {
+  left: "min-[720px]:left-3",
+  center: "min-[720px]:left-1/2 min-[720px]:-translate-x-1/2",
+  right: "min-[720px]:right-3",
+};
+
+const read = (k: string) => {
+  try {
+    return localStorage.getItem(k);
+  } catch {
+    return null;
+  }
+};
+const write = (k: string, v: string) => {
+  try {
+    localStorage.setItem(k, v);
+  } catch {}
+};
+
+/** 최대 높이 = 화면 − (헤더+툴바) − 40px */
 const maxHeight = () => {
-  const header = document.querySelector("header")?.getBoundingClientRect().height ?? 60;
-  return Math.max(MIN_H, window.innerHeight - header - 120);
+  const top = document.querySelector("main")?.getBoundingClientRect().top ?? 90;
+  return Math.max(MIN_H, window.innerHeight - top - 40);
 };
 const clampH = (h: number) => Math.round(Math.max(MIN_H, Math.min(maxHeight(), h)));
 
@@ -58,22 +82,42 @@ type HastNode = { type: string; value?: string; children?: HastNode[] };
 const nodeText = (n?: HastNode): string => (!n ? "" : n.type === "text" ? (n.value ?? "") : (n.children ?? []).map(nodeText).join(""));
 
 export default function Chat({ data }: { data: DashboardData | null }) {
-  const { chatOpen, setChatOpen, chatDraft, region, levels, groups, selectedEmd, focusOnMap, demo } = useUi();
+  const { chatOpen, setChatOpen, chatDraft, region, levels, groups, selectedEmd, focusOnMap, demo, brief } = useUi();
   const [height, setHeight] = useState(DEFAULT_H);
+  const [pos, setPos] = useState<ChatPos>("center");
+  const [unread, setUnread] = useState(false);
 
-  // 저장된 높이 복원 (localStorage 는 실패할 수 있다)
+  // 저장된 높이·위치 복원 (localStorage 는 실패할 수 있다)
   useEffect(() => {
-    try {
-      const saved = Number(localStorage.getItem(H_KEY));
-      if (saved) setHeight(clampH(saved));
-    } catch {}
+    const h = Number(read(H_KEY));
+    if (h) setHeight(clampH(h));
+    const p = read(POS_KEY);
+    if (p === "left" || p === "center" || p === "right") setPos(p);
   }, []);
   const saveHeight = (h: number) => {
     setHeight(h);
-    try {
-      localStorage.setItem(H_KEY, String(h));
-    } catch {}
+    write(H_KEY, String(h));
   };
+  const savePos = (p: ChatPos) => {
+    setPos(p);
+    write(POS_KEY, p);
+  };
+
+  // 펼치면 안 읽음 해제
+  useEffect(() => {
+    if (chatOpen) setUnread(false);
+  }, [chatOpen]);
+
+  // Esc 로 접기 (브리프 모달·필터 시트가 열려 있으면 그쪽이 먼저)
+  useEffect(() => {
+    if (!chatOpen || brief) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+      setChatOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [chatOpen, brief, setChatOpen]);
 
   const startDrag = (e: React.PointerEvent) => {
     e.preventDefault();
@@ -211,6 +255,7 @@ export default function Chat({ data }: { data: DashboardData | null }) {
           else if (event === "error") failed = String(d.message);
         });
         patch(bot.id, (m) => (failed ? { ...m, status: "error", error: failed } : { ...m, status: "done" }));
+        if (!useUi.getState().chatOpen) setUnread(true);
       } catch (e) {
         patch(bot.id, (m) => ({ ...m, status: "error", error: (e as Error).message || "연결 오류" }));
       } finally {
@@ -239,23 +284,32 @@ export default function Chat({ data }: { data: DashboardData | null }) {
   ].filter((c): c is string => !!c);
 
   if (!chatOpen) {
+    const count = messages.filter((m) => m.role === "user").length;
     return (
-      <footer className="flex h-14 shrink-0 items-center gap-3 border-t border-neutral-200 bg-white px-4">
-        <button
-          onClick={() => setChatOpen(true)}
-          className="rounded-lg bg-neutral-900 px-3 py-1.5 text-white hover:bg-neutral-700"
-        >
-          에이전트에게 묻기 ▲
-        </button>
-        <span className="truncate text-neutral-500">
-          {messages.length ? `대화 ${messages.filter((m) => m.role === "user").length}건` : "결과표를 근거로 답합니다. 숫자마다 출처를 표시합니다."}
+      <button
+        onClick={() => setChatOpen(true)}
+        aria-label={`에이전트에게 묻기${unread ? " (새 답변 있음)" : ""}`}
+        className="fixed bottom-3 left-1/2 z-[1200] flex h-12 w-[min(520px,calc(100vw-24px))] -translate-x-1/2 items-center gap-3 rounded-full border border-neutral-200 bg-white px-5 text-left shadow-[0_8px_30px_rgba(0,0,0,0.18)] hover:bg-neutral-50"
+      >
+        <span className="relative grid h-7 w-7 shrink-0 place-items-center rounded-full bg-neutral-900 text-xs text-white">
+          ▲
+          {unread && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-600" />}
         </span>
-      </footer>
+        <span className="font-semibold">에이전트에게 묻기</span>
+        <span className="truncate text-[13px] text-neutral-500">
+          · {demo ? `데모 ${demo.id} 질문 보기` : count ? `대화 ${count}건 이어보기` : "추천 질문 보기"}
+        </span>
+      </button>
     );
   }
 
   return (
-    <footer style={{ height }} className="relative flex shrink-0 flex-col border-t border-neutral-200 bg-white">
+    <section
+      data-chat-overlay="open"
+      aria-label="에이전트 대화"
+      style={{ height }}
+      className={`fixed bottom-0 z-[1200] flex w-full flex-col overflow-hidden rounded-t-2xl border border-neutral-200 bg-white shadow-[0_12px_40px_rgba(0,0,0,0.22)] max-[719px]:inset-x-0 min-[720px]:bottom-3 min-[720px]:w-[640px] min-[720px]:rounded-2xl ${POS_CLASS[pos]}`}
+    >
       <div
         role="separator"
         aria-orientation="horizontal"
@@ -263,13 +317,25 @@ export default function Chat({ data }: { data: DashboardData | null }) {
         title="드래그해서 높이 조절 · 더블클릭하면 기본 높이"
         onPointerDown={startDrag}
         onDoubleClick={() => saveHeight(clampH(DEFAULT_H))}
-        className="absolute -top-1.5 left-0 z-10 flex h-3 w-full cursor-ns-resize touch-none items-center justify-center"
+        className="flex h-3 w-full shrink-0 cursor-ns-resize touch-none items-center justify-center"
       >
         <span className="h-1 w-12 rounded-full bg-neutral-300" />
       </div>
-      <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-2">
+      <div className="flex items-center gap-2 border-b border-neutral-100 px-4 pb-2">
         <span className="font-semibold">에이전트 대화</span>
-        <button onClick={() => setChatOpen(false)} className="text-neutral-500 hover:text-neutral-900">
+        <div role="group" aria-label="대화창 위치" className="ml-auto hidden rounded-md border border-neutral-200 text-[11px] min-[720px]:flex">
+          {(["left", "center", "right"] as ChatPos[]).map((p) => (
+            <button
+              key={p}
+              aria-pressed={pos === p}
+              onClick={() => savePos(p)}
+              className={`px-2 py-0.5 first:rounded-l-md last:rounded-r-md ${pos === p ? "bg-neutral-900 text-white" : "text-neutral-600 hover:bg-neutral-50"}`}
+            >
+              {POS_LABEL[p]}
+            </button>
+          ))}
+        </div>
+        <button onClick={() => setChatOpen(false)} title="접기 (Esc)" className="ml-2 text-[13px] text-neutral-500 hover:text-neutral-900 max-[719px]:ml-auto">
           접기 ▼
         </button>
       </div>
@@ -371,6 +437,6 @@ export default function Chat({ data }: { data: DashboardData | null }) {
           {busy ? "답변 중" : "보내기"}
         </button>
       </form>
-    </footer>
+    </section>
   );
 }

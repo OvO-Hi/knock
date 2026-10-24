@@ -23,3 +23,21 @@ export const parseFlags = (s: string): Flag[] =>
     .split(";")
     .map((x) => x.trim())
     .filter((x): x is Flag => (FLAGS as readonly string[]).includes(x));
+
+/** 위험도 단계 색 — 지도·리스트·패널 배지·필터 칩·범례·가이드 공통 (단일 원본) */
+export const LEVEL_COLOR: Record<RiskLevel, string> = {
+  5: "#c0392b",
+  4: "#e67e22",
+  3: "#f1c40f",
+  2: "#85c1e9",
+  1: "#2e86c1",
+};
+
+/** 단계 색 위 글자색: 밝은 배경(5단계 제외)은 검정 — 4단계 주황도 검정 글씨 */
+export const LEVEL_TEXT: Record<RiskLevel, string> = {
+  5: "#fff",
+  4: "#111",
+  3: "#111",
+  2: "#111",
+  1: "#fff",
+};

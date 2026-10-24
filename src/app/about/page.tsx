@@ -5,7 +5,7 @@ import ShapStacked from "@/components/ShapStacked";
 import { getData } from "@/lib/data";
 import { VARIABLE_META } from "@/lib/variables";
 
-export const metadata: Metadata = { title: "이 지도는 어떻게 만들었나 · 노크 KNOCK" };
+export const metadata: Metadata = { title: "이 지도는 어떻게 만들었나 — 노크" };
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (

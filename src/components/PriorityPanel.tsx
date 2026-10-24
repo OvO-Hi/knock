@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { FLAGS, type Flag, type Group } from "@/lib/constants";
 import { GROUP_COLOR, LEVEL_COLOR, REGION_LABEL, fmtInt, textOn } from "@/lib/labels";
+import { toastError } from "@/store/toast";
 import { useUi } from "@/store/ui";
 import TopNSelect from "./TopNSelect";
 
@@ -41,7 +42,11 @@ export default function PriorityPanel() {
         setRows(j.data.우선_동);
         setError(null);
       })
-      .catch((e: Error) => e.name !== "AbortError" && setError(e.message));
+      .catch((e: Error) => {
+        if (e.name === "AbortError") return;
+        setError(e.message);
+        toastError(`우선 동을 불러오지 못했습니다: ${e.message}`);
+      });
     return () => ac.abort();
   }, [region, topN, adminType, exclude]);
 

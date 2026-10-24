@@ -9,7 +9,7 @@ export default function DemoMenu() {
   const { demo, applyScenario, exitDemo } = useUi();
   return (
     <label className="flex items-center gap-1.5 text-xs">
-      <span className={demo ? "font-semibold text-sky-800" : "text-neutral-500"}>데모</span>
+      <span className={`hidden sm:inline ${demo ? "font-semibold text-sky-800" : "text-neutral-500"}`}>데모</span>
       <select
         aria-label="데모 시나리오"
         value={demo?.id ?? ""}
@@ -19,9 +19,9 @@ export default function DemoMenu() {
           if (s) applyScenario(s);
           else exitDemo();
         }}
-        className={`rounded-md border px-1.5 py-1 ${demo ? "border-sky-400 bg-sky-50" : "border-neutral-300 bg-white"}`}
+        className={`max-w-[9.5rem] rounded-md border px-1.5 py-1 ${demo ? "border-sky-400 bg-sky-50" : "border-neutral-300 bg-white"}`}
       >
-        <option value="">선택 ▼</option>
+        <option value="">데모 ▼</option>
         {SCENARIOS.map((s) => (
           <option key={s.id} value={s.id}>
             {s.title}

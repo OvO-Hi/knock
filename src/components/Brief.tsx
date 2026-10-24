@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { toastError } from "@/store/toast";
 import { useUi } from "@/store/ui";
 
 interface BriefResponse {
@@ -52,7 +53,11 @@ export default function Brief() {
         if (!r.ok) throw new Error(j.error ?? `서버 오류 ${r.status}`);
         setData(j);
       })
-      .catch((e: Error) => e.name !== "AbortError" && setError(e.message));
+      .catch((e: Error) => {
+        if (e.name === "AbortError") return;
+        setError(e.message);
+        toastError(`브리프를 만들지 못했습니다: ${e.message}`);
+      });
     return () => ac.abort();
   }, [brief]);
 

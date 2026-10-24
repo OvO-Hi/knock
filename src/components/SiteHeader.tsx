@@ -1,19 +1,26 @@
-// 세 페이지(대시보드·/guide·/about) 공통 헤더
+// 세 페이지(대시보드·/guide·/about) 공통 헤더 — 로고와 페이지 이동만 두고 필터는 툴바로 분리
 import Link from "next/link";
 
 const NAV = [
-  { href: "/", label: "지도" },
   { href: "/guide", label: "군집 가이드" },
-  { href: "/about", label: "이 지도는 어떻게 만들었나" },
+  { href: "/about", label: "만든 방법" },
 ] as const;
 
-export default function SiteHeader({ current, children }: { current: "/" | "/guide" | "/about"; children?: React.ReactNode }) {
+export default function SiteHeader({ current, right }: { current: "/" | "/guide" | "/about"; right?: React.ReactNode }) {
   return (
-    <header className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-neutral-200 bg-white px-4 py-2.5">
-      <Link href="/" className="text-base font-bold whitespace-nowrap">
-        노크 KNOCK <span className="font-normal text-neutral-500">· 중장년 고립 위험 지도</span>
+    <header className="flex h-12 shrink-0 items-center gap-3 border-b border-neutral-200 bg-white px-4">
+      <Link href="/" className="flex min-w-0 items-baseline gap-2" aria-label="노크 — 지도로 가기">
+        <span className="shrink-0 text-lg font-extrabold tracking-tight whitespace-nowrap">노크</span>
+        <span className="hidden min-w-0 truncate text-xs text-neutral-500 min-[480px]:inline">
+          중장년 고립 위험 지도<span className="hidden sm:inline"> · 강남구·춘천시 2025.7~12</span>
+        </span>
       </Link>
-      <nav className="flex gap-1 text-[13px]">
+      <nav className="ml-auto flex shrink-0 items-center gap-1 text-[13px]">
+        {current !== "/" && (
+          <Link href="/" className="rounded-md px-2 py-1 text-neutral-600 hover:bg-neutral-100">
+            지도
+          </Link>
+        )}
         {NAV.map((n) => (
           <Link
             key={n.href}
@@ -24,8 +31,8 @@ export default function SiteHeader({ current, children }: { current: "/" | "/gui
             {n.label}
           </Link>
         ))}
+        {right}
       </nav>
-      {children}
     </header>
   );
 }

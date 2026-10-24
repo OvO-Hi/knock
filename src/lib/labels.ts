@@ -1,5 +1,5 @@
 // 화면 표기용 라벨·색 (CLAUDE.md §4.2·4.3)
-import type { Flag, Group, RiskLevel } from "./constants";
+import { LEVEL_COLOR, LEVEL_TEXT, type Flag, type Group, type RiskLevel } from "./constants";
 
 export type Region = "all" | "11230" | "32010";
 
@@ -33,13 +33,7 @@ export const GROUP_DESC: Record<Group, string> = {
   LL: "고밀 아파트 단지",
 };
 
-export const LEVEL_COLOR: Record<RiskLevel, string> = {
-  5: "#c0392b",
-  4: "#e67e22",
-  3: "#f1c40f",
-  2: "#85c1e9",
-  1: "#2e86c1",
-};
+export { LEVEL_COLOR, LEVEL_TEXT } from "./constants";
 
 export const GROUP_COLOR: Record<Group, string> = {
   HH1: "#8e1b1b",
@@ -49,8 +43,9 @@ export const GROUP_COLOR: Record<Group, string> = {
   LL: "#7f8c8d",
 };
 
-/** 밝은 배경색 위 글자는 검정 */
-export const textOn = (bg: string) => (["#f1c40f", "#85c1e9", "#e67e22"].includes(bg) ? "#111" : "#fff");
+/** 배경색 위 글자색: 단계 색이면 LEVEL_TEXT(4단계 주황 포함 밝은 색은 검정), 그 밖(군집·플래그의 진한 색)은 흰색 */
+const TEXT_BY_BG = new Map(Object.entries(LEVEL_COLOR).map(([l, c]) => [c, LEVEL_TEXT[Number(l) as RiskLevel]]));
+export const textOn = (bg: string) => TEXT_BY_BG.get(bg) ?? "#fff";
 
 /** 춘천 '강남동'을 서울 '강남구'와 헷갈리지 않게 표기 */
 export function displayName(d: { EMD_NM: string; SGG_CD: string }): string {

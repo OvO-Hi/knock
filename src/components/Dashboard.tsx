@@ -8,12 +8,14 @@ import { matchesFilter } from "@/lib/selectors";
 import { useUi } from "@/store/ui";
 import Brief from "./Brief";
 import Chat from "./Chat";
-import Filters from "./Filters";
+import DemoMenu from "./DemoMenu";
 import DongList from "./DongList";
 import DongPanel from "./DongPanel";
 import FilterSummary from "./FilterSummary";
 import PriorityPanel from "./PriorityPanel";
 import SiteHeader from "./SiteHeader";
+import { MapSkeleton, PanelSkeleton } from "./Skeleton";
+import Toolbar from "./Toolbar";
 
 const TAB_LABEL = { map: "지도", list: "리스트", priority: "우선 동" } as const;
 
@@ -37,14 +39,14 @@ export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
 
   return (
     <div className="flex min-h-screen flex-col md:h-screen md:min-h-0">
-      <SiteHeader current="/">
-        <Filters />
-      </SiteHeader>
+      <SiteHeader current="/" right={<DemoMenu />} />
+      <Toolbar />
 
-      <main className="flex min-h-0 flex-1 flex-col gap-3 p-3 md:flex-row">
+      {/* 대화창은 오버레이라 이 영역 높이에 영향을 주지 않는다. 모바일은 접힌 바만큼 아래 여백 */}
+      <main className="flex min-h-0 flex-1 flex-col gap-3 p-3 pb-20 md:flex-row md:pb-3">
         {/* ① 지도 + 리스트 */}
         <section className="flex h-[65vh] flex-col overflow-hidden rounded-xl bg-white shadow-sm md:h-auto md:w-[55%]">
-          <div role="tablist" className="flex gap-1 border-b border-neutral-100 px-3 pt-2">
+          <div role="tablist" aria-label="왼쪽 화면" className="flex gap-1 border-b border-neutral-100 px-3 pt-2">
             {(["map", "list", "priority"] as const).map((t) => (
               <button
                 key={t}
@@ -59,6 +61,7 @@ export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
           </div>
           <div className="relative min-h-0 flex-1">
             {error && <p className="p-6 text-red-700">데이터를 불러오지 못했습니다: {error}</p>}
+            {!data && !error && <MapSkeleton />}
             {data && (
               <>
                 {/* 지도는 계속 마운트해 두고 리스트를 위에 덮는다 (Leaflet 크기·상태 유지) */}
@@ -81,7 +84,8 @@ export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
         </section>
 
         {/* ② 동 상세 패널 */}
-        <aside className="min-h-0 md:w-[45%] md:overflow-y-auto">
+        <aside aria-label="동 상세" className="min-h-0 md:w-[45%] md:overflow-y-auto">
+          {!data && !error && <PanelSkeleton />}
           {data &&
             (dong ? (
               <DongPanel
@@ -98,7 +102,7 @@ export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
         </aside>
       </main>
 
-      {/* ③ 에이전트 대화 */}
+      {/* ③ 에이전트 대화 — 고정 오버레이 */}
       <Chat data={data} />
       <Brief />
     </div>

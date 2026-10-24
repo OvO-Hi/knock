@@ -63,3 +63,15 @@ body {
     display: none !important;
   }
 }
+
+/* 키보드 포커스 링 (탭·버튼·링크·지도 폴리곤) */
+:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.leaflet-container path.leaflet-interactive:focus-visible {
+  outline: none;
+  stroke: #1d4ed8;
+  stroke-width: 4px;
+}

@@ -18,7 +18,7 @@ export default function FilterSummary({ dongs }: { dongs: DongDTO[] }) {
         현재 필터({REGION_LABEL[region]}): <b className="text-neutral-900">{rows.length}개 동</b> / 전체 {dongs.length}개
       </p>
 
-      <h3 className="mt-4 mb-2 text-xs font-semibold text-neutral-500">단계 분포</h3>
+      <h3 className="mt-5 mb-2 text-[11px] font-semibold tracking-[0.08em] text-neutral-500">단계 분포</h3>
       <ul className="space-y-1 tabular-nums">
         {LEVELS.map((l) => {
           const n = rows.filter((d) => d.RISK_LEVEL === l).length;
@@ -34,7 +34,7 @@ export default function FilterSummary({ dongs }: { dongs: DongDTO[] }) {
         })}
       </ul>
 
-      <h3 className="mt-4 mb-2 text-xs font-semibold text-neutral-500">군집 분포</h3>
+      <h3 className="mt-5 mb-2 text-[11px] font-semibold tracking-[0.08em] text-neutral-500">군집 분포</h3>
       <div className="flex flex-wrap gap-2 tabular-nums">
         {GROUPS.map((g) => (
           <span key={g} className="rounded-md border px-2 py-0.5 text-xs" style={{ borderColor: GROUP_COLOR[g] }}>

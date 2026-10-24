@@ -8,7 +8,7 @@ import { getData, type ClusterProfile } from "@/lib/data";
 import { GROUP_COLOR, GROUP_DESC, GROUP_NAME, LEVEL_COLOR, displayName, textOn } from "@/lib/labels";
 import { VARIABLE_META } from "@/lib/variables";
 
-export const metadata: Metadata = { title: "군집 가이드 · 노크 KNOCK" };
+export const metadata: Metadata = { title: "군집 가이드 — 노크" };
 
 const f1 = (n: number) => n.toFixed(1);
 const DETAILS = ["DETAIL_1", "DETAIL_2", "DETAIL_3", "DETAIL_4", "DETAIL_5"] as const;

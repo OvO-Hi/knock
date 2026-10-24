@@ -2,7 +2,7 @@
 // 행정동 위험도 지도 (CLAUDE.md §4.2). Dashboard 에서 dynamic import(ssr: false)로 불러온다.
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useRef } from "react";
-import { GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
+import { AttributionControl, GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import type { Feature, Geometry } from "geojson";
 import type { DashboardData } from "@/lib/useDashboardData";
@@ -24,7 +24,9 @@ export default function Map({ data }: { data: DashboardData }) {
 
   return (
     <div className="relative h-full w-full">
-      <MapContainer center={[37.7, 127.4]} zoom={9} className="h-full w-full" zoomControl preferCanvas={false}>
+      {/* 저작권 표시는 오른쪽 위 — 하단 중앙의 대화 바·좌하단 범례와 겹치지 않게 */}
+      <MapContainer center={[37.7, 127.4]} zoom={9} className="h-full w-full" zoomControl attributionControl={false} preferCanvas={false}>
+        <AttributionControl position="topright" prefix='<a href="https://leafletjs.com">Leaflet</a>' />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -32,6 +34,7 @@ export default function Map({ data }: { data: DashboardData }) {
         <DongLayer data={data} geoRef={geoRef} layers={layers} />
       </MapContainer>
       <Legend />
+      <EmptyNotice data={data} />
     </div>
   );
 }
@@ -64,9 +67,24 @@ function DongLayer({
     const code = feature.properties.EMD_CD;
     const d = data.dongByCode.get(code);
     layers.current.set(code, layer as L.Path);
+    const label = d ? `${displayName(d)} ${d.RISK_LEVEL}단계 ${d.GROUP}` : feature.properties.EMD_NM;
     if (d) layer.bindTooltip(`${displayName(d)} · ${d.RISK_LEVEL}단계 · ${d.GROUP}`, { sticky: true });
     layer.on("click", () => {
       if (activeRef.current.has(code)) selectRef.current(code);
+    });
+    // 접근성: SVG path 에 이름표 + 키보드 선택 (path 는 레이어가 지도에 붙을 때 생긴다)
+    layer.on("add", () => {
+      const el = (layer as L.Path).getElement();
+      if (!el) return;
+      el.setAttribute("aria-label", label);
+      el.setAttribute("role", "button");
+      el.addEventListener("keydown", (e) => {
+        const k = (e as KeyboardEvent).key;
+        if ((k === "Enter" || k === " ") && activeRef.current.has(code)) {
+          e.preventDefault();
+          selectRef.current(code);
+        }
+      });
     });
   };
 
@@ -90,7 +108,12 @@ function DongLayer({
         if (selected) layer.bringToFront();
       }
       const el = layer.getElement() as HTMLElement | SVGElement | undefined;
-      if (el) el.style.cursor = isActive ? "pointer" : "default";
+      if (el) {
+        el.style.cursor = isActive ? "pointer" : "default";
+        // 필터 밖 동은 탭 순서에서 뺀다
+        el.setAttribute("tabindex", isActive ? "0" : "-1");
+        el.setAttribute("aria-disabled", String(!isActive));
+      }
     }
   }, [active, colorMode, selectedEmd, data.dongByCode, layers]);
 
@@ -109,7 +132,19 @@ function DongLayer({
     const layer = layers.current.get(focus.emd) as L.Polygon | undefined;
     if (!layer) return;
     map.invalidateSize();
-    map.flyToBounds(layer.getBounds(), { maxZoom: 14, padding: [40, 40], duration: 0.8 });
+    // 대화창 오버레이가 지도 아래쪽을 가리면 그만큼 아래 여백을 줘서 대화창 위쪽 영역 중앙으로
+    let hidden = 0;
+    const chat = document.querySelector("[data-chat-overlay]")?.getBoundingClientRect();
+    const box = map.getContainer().getBoundingClientRect();
+    if (chat && chat.left < box.right && chat.right > box.left && chat.top < box.bottom) {
+      hidden = Math.min(box.bottom - Math.max(chat.top, box.top), box.height - 120);
+    }
+    map.flyToBounds(layer.getBounds(), {
+      maxZoom: 14,
+      paddingTopLeft: [40, 40],
+      paddingBottomRight: [40, 40 + Math.max(0, hidden)],
+      duration: 0.8,
+    });
   }, [focus, map, layers]);
 
   // 리스트 탭에서 돌아올 때 크기 재계산
@@ -126,5 +161,19 @@ function DongLayer({
 
   return (
     <GeoJSON ref={geoRef} data={data.geo} onEachFeature={onEachFeature} style={initialStyle} />
+  );
+}
+
+/** 필터 결과 0건 안내 */
+function EmptyNotice({ data }: { data: DashboardData }) {
+  const { region, levels, groups } = useUi();
+  const n = data.dongs.filter((d) => matchesFilter(d, { region, levels, groups })).length;
+  if (n > 0) return null;
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-12 z-[1000] flex justify-center">
+      <p className="rounded-full bg-white/95 px-4 py-1.5 text-[13px] text-neutral-700 shadow">
+        현재 필터에 해당하는 동이 없습니다. 단계·군집 필터를 넓혀 보세요.
+      </p>
+    </div>
   );
 }

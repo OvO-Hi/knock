@@ -21,10 +21,15 @@ import { VARIABLE_META, type VariableMeta } from "@/lib/variables";
 import { useUi } from "@/store/ui";
 import { RecommendedActions, ResourceList } from "./DongActions";
 
-function Card({ title, children }: { title?: string; children: React.ReactNode }) {
+function Card({ title, hint, children }: { title?: string; hint?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl bg-white p-4 shadow-sm">
-      {title && <h3 className="mb-2 font-semibold">{title}</h3>}
+    <section className="rounded-xl bg-white p-5 shadow-sm">
+      {title && (
+        <h3 className="mb-3 flex items-baseline gap-2 text-[11px] font-semibold tracking-[0.08em] text-neutral-500">
+          {title}
+          {hint && <span className="font-normal tracking-normal text-neutral-400">{hint}</span>}
+        </h3>
+      )}
       {children}
     </section>
   );
@@ -230,7 +235,7 @@ export default function DongPanel({
   const levelColor = LEVEL_COLOR[dong.RISK_LEVEL];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5 pb-4">
       <Card>
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-xl font-bold">
@@ -281,11 +286,11 @@ export default function DongPanel({
         </div>
       </Card>
 
-      <Card title="변수별 단계점수 (1~5, 5 = 시군구 안 가장 위험)">
+      <Card title="변수별 단계점수" hint="1~5, 5 = 시군구 안 가장 위험">
         <VariableBars dong={dong} />
       </Card>
 
-      <Card title="왜 이 군집인가 (SHAP 판별 근거)">
+      <Card title="왜 이 군집인가" hint="SHAP 판별 근거">
         <Reasons dong={dong} />
       </Card>
 
@@ -297,7 +302,7 @@ export default function DongPanel({
         <RecommendedActions key={dong.EMD_CD} rule={rule} />
       </Card>
 
-      <Card title={`연결 가능한 자원 (${resources.own.length + resources.general.length}건)`}>
+      <Card title="연결 가능한 자원" hint={`${resources.own.length + resources.general.length}건`}>
         <ResourceList key={dong.EMD_CD} match={resources} emdCd={dong.EMD_CD} />
       </Card>
 

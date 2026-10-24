@@ -11,7 +11,11 @@ export default function Legend() {
       : GROUPS.map((g) => ({ key: g, color: GROUP_COLOR[g], text: `${g} ${GROUP_NAME[g]}` }));
 
   return (
-    <div className="pointer-events-none absolute right-3 bottom-6 z-[1000] rounded-xl bg-white/95 px-3 py-2 text-xs shadow">
+    <div
+      role="note"
+      aria-label={`범례: ${colorMode === "level" ? "위험도 단계" : "군집 유형"} 색`}
+      className="pointer-events-none absolute bottom-3 left-3 z-[1000] rounded-xl bg-white/95 px-3 py-2 text-xs shadow"
+    >
       <div className="mb-1 font-semibold">{colorMode === "level" ? "위험도 단계" : "군집 유형"}</div>
       <ul className="space-y-0.5">
         {items.map((it) => (
