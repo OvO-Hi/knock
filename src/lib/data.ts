@@ -4,10 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import Papa from "papaparse";
 
-import { GROUPS, VARIABLES, type Group, type RiskLevel, type VariableCode } from "./constants";
+import { FLAGS, GROUPS, VARIABLES, parseFlags, type Flag, type Group, type RiskLevel, type VariableCode } from "./constants";
 
-export { GROUPS, VARIABLES };
-export type { Group, RiskLevel, VariableCode };
+export { FLAGS, GROUPS, VARIABLES, parseFlags };
+export type { Flag, Group, RiskLevel, VariableCode };
 /** *_Q 단계점수 (시군구 안 5분위, 5 = 위험) */
 export type Quintile = 1 | 2 | 3 | 4 | 5;
 
@@ -94,6 +94,56 @@ export interface ShapRow {
   합계: number;
 }
 
+/** dong_subtype.csv — FLAG 는 ";" 로 여러 개 */
+export interface DongSubtype {
+  EMD_CD: string;
+  SUBTYPE_ID: string;
+  SUBTYPE_NM: string;
+  FLAG: string;
+  NOTE: string;
+}
+
+export interface InterventionRule {
+  SUBTYPE_ID: string;
+  GROUP: Group;
+  SUBTYPE_NM: string;
+  TARGET_DONGS: string;
+  CORE_ACTION: string;
+  DETAIL_1: string;
+  DETAIL_2: string;
+  DETAIL_3: string;
+  DETAIL_4: string;
+  DETAIL_5: string;
+  LINK_PROGRAM: string;
+  EVIDENCE: string;
+}
+
+export interface LevelPolicy {
+  RISK_LEVEL: RiskLevel;
+  PRIORITY_LABEL: string;
+  CYCLE: string;
+  ACTION_MODE: string;
+}
+
+export interface WelfareResource {
+  RES_ID: string;
+  SGG_CD: string;
+  SGG_NM: string;
+  SCOPE: "동" | "시군구" | "광역";
+  EMD_CD: string;
+  NAME: string;
+  PROVIDER: string;
+  TYPE: string;
+  TARGET: string;
+  SUMMARY: string;
+  PERIOD: string;
+  /** ";" 로 연결된 GROUP 목록 */
+  MATCH_GROUPS: string;
+  CONTACT_OR_URL: string;
+  /** ";" 로 연결된 출처 URL */
+  SOURCE_URL: string;
+}
+
 export interface KnockData {
   dongs: DongRow[];
   dongByCode: Map<string, DongRow>;
@@ -102,6 +152,11 @@ export interface KnockData {
   sensitivity: SensitivityRow[];
   shap: ShapRow[];
   variableDictionary: string;
+  subtypes: DongSubtype[];
+  subtypeByCode: Map<string, DongSubtype>;
+  rules: InterventionRule[];
+  levelPolicy: LevelPolicy[];
+  resources: WelfareResource[];
 }
 
 export const DONG_COLUMNS = [
@@ -140,6 +195,10 @@ function typed<T>(rows: Raw[], stringCols: Set<string>, file: string): T[] {
     return out as T;
   });
 }
+
+/** 전부 문자열 컬럼인 CSV */
+const allStrings = <T,>(rows: Raw[]): T[] =>
+  rows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, (v ?? "").trim()])) as T);
 
 function assertGroup(v: string, file: string): Group {
   if (!(GROUPS as readonly string[]).includes(v)) throw new Error(`${file}: GROUP 값 오류 (${v})`);
@@ -181,6 +240,18 @@ export function loadData(dataDir = path.join(process.cwd(), "data")): KnockData 
 
   const variableDictionary = fs.readFileSync(p("variable_dictionary.md"), "utf8").replace(/^﻿/, "");
 
+  const subtypes = allStrings<DongSubtype>(readCsv(p("dong_subtype.csv")).rows);
+
+  const rules = allStrings<InterventionRule>(readCsv(p("intervention_rules.csv")).rows);
+  rules.forEach((r) => assertGroup(r.GROUP, "intervention_rules.csv"));
+
+  const levelPolicy = typed<LevelPolicy>(
+    readCsv(p("level_policy.csv")).rows, new Set(["PRIORITY_LABEL", "CYCLE", "ACTION_MODE"]), "level_policy.csv",
+  );
+  levelPolicy.forEach((l) => assertLevel(l.RISK_LEVEL, "RISK_LEVEL", "level_policy.csv"));
+
+  const resources = allStrings<WelfareResource>(readCsv(p("welfare_resources.csv")).rows);
+
   return {
     dongs,
     dongByCode: new Map(dongs.map((d) => [d.EMD_CD, d])),
@@ -189,6 +260,11 @@ export function loadData(dataDir = path.join(process.cwd(), "data")): KnockData 
     sensitivity,
     shap,
     variableDictionary,
+    subtypes,
+    subtypeByCode: new Map(subtypes.map((s) => [s.EMD_CD, s])),
+    rules,
+    levelPolicy,
+    resources,
   };
 }
 

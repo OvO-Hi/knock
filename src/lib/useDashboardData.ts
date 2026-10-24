@@ -2,30 +2,42 @@
 // /api/dongs · /api/geo 를 마운트 시 한 번 받아 모듈 단위로 캐시
 import { useEffect, useState } from "react";
 import type { FeatureCollection, Geometry } from "geojson";
-import type { DongDTO, DongsResponse, EmdFeatureProps } from "./api-types";
-import type { ClusterProfile } from "./data";
+import type { DongDTO, DongsResponse, EmdFeatureProps, ResourcesResponse, RulesResponse } from "./api-types";
+import type { ClusterProfile, InterventionRule, LevelPolicy, WelfareResource } from "./data";
 
 export interface DashboardData {
   dongs: DongDTO[];
   dongByCode: Map<string, DongDTO>;
   profiles: ClusterProfile[];
   geo: FeatureCollection<Geometry, EmdFeatureProps>;
+  ruleById: Map<string, InterventionRule>;
+  levelPolicy: LevelPolicy[];
+  resources: WelfareResource[];
 }
 
 let cache: Promise<DashboardData> | null = null;
 
+async function getJson<T>(url: string): Promise<T> {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${url} ${r.status}`);
+  return r.json() as Promise<T>;
+}
+
 async function load(): Promise<DashboardData> {
-  const [d, geo] = await Promise.all([
-    fetch("/api/dongs").then((r) => {
-      if (!r.ok) throw new Error(`/api/dongs ${r.status}`);
-      return r.json() as Promise<DongsResponse>;
-    }),
-    fetch("/api/geo").then((r) => {
-      if (!r.ok) throw new Error(`/api/geo ${r.status}`);
-      return r.json() as Promise<DashboardData["geo"]>;
-    }),
+  const [d, geo, rules, res] = await Promise.all([
+    getJson<DongsResponse>("/api/dongs"),
+    getJson<DashboardData["geo"]>("/api/geo"),
+    getJson<RulesResponse>("/api/rules"),
+    getJson<ResourcesResponse>("/api/resources"),
   ]);
-  return { ...d, dongByCode: new Map(d.dongs.map((x) => [x.EMD_CD, x])), geo };
+  return {
+    ...d,
+    dongByCode: new Map(d.dongs.map((x) => [x.EMD_CD, x])),
+    geo,
+    ruleById: new Map(rules.rules.map((r) => [r.SUBTYPE_ID, r])),
+    levelPolicy: rules.levelPolicy,
+    resources: res.resources,
+  };
 }
 
 export function useDashboardData() {

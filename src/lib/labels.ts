@@ -1,5 +1,5 @@
 // 화면 표기용 라벨·색 (CLAUDE.md §4.2·4.3)
-import type { Group, RiskLevel } from "./constants";
+import type { Flag, Group, RiskLevel } from "./constants";
 
 export type Region = "all" | "11230" | "32010";
 
@@ -50,7 +50,7 @@ export const GROUP_COLOR: Record<Group, string> = {
 };
 
 /** 밝은 배경색 위 글자는 검정 */
-export const textOn = (bg: string) => (["#f1c40f", "#85c1e9"].includes(bg) ? "#111" : "#fff");
+export const textOn = (bg: string) => (["#f1c40f", "#85c1e9", "#e67e22"].includes(bg) ? "#111" : "#fff");
 
 /** 춘천 '강남동'을 서울 '강남구'와 헷갈리지 않게 표기 */
 export function displayName(d: { EMD_NM: string; SGG_CD: string }): string {
@@ -58,3 +58,9 @@ export function displayName(d: { EMD_NM: string; SGG_CD: string }): string {
 }
 
 export const fmtInt = (n: number) => Math.round(n).toLocaleString("ko-KR");
+
+export const FLAG_COLOR: Record<Flag, string> = {
+  탐색지구: "#7d3c98",
+  관찰지구: "#7f8c8d",
+  경계: "#e67e22",
+};

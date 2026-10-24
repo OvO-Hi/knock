@@ -1,7 +1,7 @@
 // 데이터 검증 (CLAUDE.md §8 0단계). 실행: npm run validate
 import fs from "node:fs";
 import path from "node:path";
-import { DONG_COLUMNS, GROUPS, loadData, readCsv } from "../src/lib/data";
+import { DONG_COLUMNS, GROUPS, loadData, parseFlags, readCsv } from "../src/lib/data";
 import { parseReason } from "../src/lib/reason";
 
 const DATA = path.join(__dirname, "..", "data");
@@ -50,6 +50,53 @@ try {
   check("sensitivity_final 6행", data.sensitivity.length === 6, `${data.sensitivity.length}행`);
   check("shap_importance 5행", data.shap.length === 5, `${data.shap.length}행`);
   check("variable_dictionary.md 로드", data.variableDictionary.length > 0);
+
+  // --- 에이전트용 데이터 (§3.2) ---
+  const subCodes = data.subtypes.map((s) => s.EMD_CD);
+  const subNoDong = subCodes.filter((c) => !data.dongByCode.has(c));
+  const dongNoSub = dongs.filter((d) => !data.subtypeByCode.has(d.EMD_CD)).map((d) => d.EMD_NM);
+  check("dong_subtype 47행 · EMD_CD 전부 dong_cluster와 일치",
+    data.subtypes.length === 47 && data.subtypeByCode.size === 47 && !subNoDong.length && !dongNoSub.length,
+    `${data.subtypes.length}행` +
+      (subNoDong.length ? `, dong_cluster에 없음 ${subNoDong}` : "") +
+      (dongNoSub.length ? `, 하위유형 없음 ${dongNoSub}` : ""));
+
+  const ruleIds = new Set(data.rules.map((r) => r.SUBTYPE_ID));
+  const noRule = [...new Set(data.subtypes.map((s) => s.SUBTYPE_ID))].filter((id) => !ruleIds.has(id));
+  check("모든 SUBTYPE_ID가 intervention_rules에 존재", !noRule.length && ruleIds.size === data.rules.length,
+    noRule.length ? `규칙 없음 ${noRule}` : `하위유형 ${ruleIds.size}종`);
+
+  const groupMismatch = data.subtypes.filter((s) => {
+    const d = data.dongByCode.get(s.EMD_CD);
+    const r = data.rules.find((x) => x.SUBTYPE_ID === s.SUBTYPE_ID);
+    return !d || !r || r.GROUP !== d.GROUP;
+  });
+  check("하위유형 GROUP = 동 GROUP", !groupMismatch.length, groupMismatch.map((s) => s.EMD_CD).join(","));
+
+  const badFlag = data.subtypes.filter((s) => s.FLAG && parseFlags(s.FLAG).length !== s.FLAG.split(";").length);
+  const boundaryMiss = dongs.filter(
+    (d) => (d.P_OWN < 0.5) !== parseFlags(data.subtypeByCode.get(d.EMD_CD)?.FLAG ?? "").includes("경계"),
+  );
+  check("FLAG 값 유효 · 경계 = P_OWN<0.5", !badFlag.length && !boundaryMiss.length,
+    [...badFlag.map((s) => `잘못된 FLAG ${s.EMD_CD}`), ...boundaryMiss.map((d) => `경계 불일치 ${d.EMD_NM}`)].join(", "));
+
+  const lv = data.levelPolicy.map((l) => l.RISK_LEVEL).sort().join(",");
+  check("level_policy 5행 (1~5)", lv === "1,2,3,4,5", lv);
+
+  const noSource = data.resources.filter((r) => !r.SOURCE_URL.trim());
+  const badUrl = data.resources.filter((r) => r.SOURCE_URL.split(";").some((u) => !/^https?:\/\/\S+$/.test(u.trim())));
+  check("welfare_resources SOURCE_URL 전부 존재", data.resources.length > 0 && !noSource.length && !badUrl.length,
+    `${data.resources.length}건` +
+      (noSource.length ? `, 출처 없음 ${noSource.map((r) => r.RES_ID)}` : "") +
+      (badUrl.length ? `, URL 형식 오류 ${badUrl.map((r) => r.RES_ID)}` : ""));
+
+  const badMatch = data.resources.filter((r) =>
+    r.MATCH_GROUPS.split(";").filter(Boolean).some((g) => !(GROUPS as readonly string[]).includes(g)),
+  );
+  check("MATCH_GROUPS 값이 GROUP 집합 안", !badMatch.length, badMatch.map((r) => `${r.RES_ID}:${r.MATCH_GROUPS}`).join(", "));
+
+  const badEmd = data.resources.filter((r) => r.EMD_CD && !data.dongByCode.has(r.EMD_CD));
+  check("welfare_resources EMD_CD 유효", !badEmd.length, badEmd.map((r) => r.RES_ID).join(","));
 
   const geoPath = path.join(DATA, "gangnam_chuncheon_emd.geojson");
   if (!fs.existsSync(geoPath)) {

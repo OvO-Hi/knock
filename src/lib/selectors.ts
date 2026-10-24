@@ -1,6 +1,7 @@
 // 필터·우선순위 계산 (클라이언트 공용)
 import type { DongDTO } from "./api-types";
 import type { Group, RiskLevel } from "./constants";
+import type { WelfareResource } from "./data";
 import type { Region } from "./labels";
 
 export interface Filters {
@@ -18,4 +19,19 @@ export const byPriority = (a: DongDTO, b: DongDTO) => b.RISK_LEVEL - a.RISK_LEVE
 /** 필터 통과 동 중 우선순위 상위 n 의 EMD_CD */
 export function topN(dongs: DongDTO[], f: Filters, n: number): Set<string> {
   return new Set(dongs.filter((d) => matchesFilter(d, f)).sort(byPriority).slice(0, n).map((d) => d.EMD_CD));
+}
+
+/**
+ * 동에 연결 가능한 자원: SGG_CD 일치 AND (EMD_CD 가 이 동이거나 빈칸) AND MATCH_GROUPS 에 동 GROUP 포함.
+ * 동 단위 사업을 맨 위로.
+ */
+export function matchResources(d: DongDTO, resources: WelfareResource[]): WelfareResource[] {
+  return resources
+    .filter(
+      (r) =>
+        r.SGG_CD === d.SGG_CD &&
+        (r.EMD_CD === "" || r.EMD_CD === d.EMD_CD) &&
+        r.MATCH_GROUPS.split(";").includes(d.GROUP),
+    )
+    .sort((a, b) => Number(b.EMD_CD === d.EMD_CD) - Number(a.EMD_CD === d.EMD_CD));
 }

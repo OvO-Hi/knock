@@ -2,7 +2,7 @@
 // 대시보드 레이아웃 (CLAUDE.md §4.1): 헤더 / 좌 55% 지도·리스트 / 우 45% 동 패널 / 하단 대화 자리
 import dynamic from "next/dynamic";
 import { useDashboardData } from "@/lib/useDashboardData";
-import { matchesFilter } from "@/lib/selectors";
+import { matchResources, matchesFilter } from "@/lib/selectors";
 import { useUi } from "@/store/ui";
 import Filters from "./Filters";
 import DongList from "./DongList";
@@ -70,6 +70,9 @@ export default function Dashboard() {
                 dong={dong}
                 profile={data.profiles.find((p) => p.GROUP === dong.GROUP)}
                 inFilter={matchesFilter(dong, { region, levels, groups })}
+                rule={dong.subtype ? data.ruleById.get(dong.subtype.SUBTYPE_ID) : undefined}
+                policy={data.levelPolicy.find((l) => l.RISK_LEVEL === dong.RISK_LEVEL)}
+                resources={matchResources(dong, data.resources)}
               />
             ) : (
               <FilterSummary dongs={data.dongs} />

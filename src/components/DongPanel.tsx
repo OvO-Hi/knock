@@ -2,9 +2,10 @@
 // 동 상세 패널 (CLAUDE.md §4.3). 권장 조치·연결 자원·브리프는 3·5단계에서 추가.
 import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { DongDTO } from "@/lib/api-types";
-import type { ClusterProfile } from "@/lib/data";
+import type { ClusterProfile, InterventionRule, LevelPolicy, WelfareResource } from "@/lib/data";
 import type { RiskLevel } from "@/lib/constants";
 import {
+  FLAG_COLOR,
   GROUP_COLOR,
   GROUP_DESC,
   GROUP_NAME,
@@ -16,6 +17,7 @@ import {
 } from "@/lib/labels";
 import { VARIABLE_META, type VariableMeta } from "@/lib/variables";
 import { useUi } from "@/store/ui";
+import { RecommendedActions, ResourceList } from "./DongActions";
 
 function Card({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
@@ -161,8 +163,8 @@ function ClusterCompare({ dong, profile }: { dong: DongDTO; profile?: ClusterPro
           return (
             <tr key={m.code} className="border-t border-neutral-100">
               <td className="py-1">{m.label}</td>
-              <td className="py-1 text-right font-semibold">{mine}점</td>
-              <td className="py-1 text-right text-neutral-600">{avg}점</td>
+              <td className="py-1 text-right font-semibold">{mine.toFixed(1)}점</td>
+              <td className="py-1 text-right text-neutral-600">{avg.toFixed(1)}점</td>
             </tr>
           );
         })}
@@ -180,7 +182,42 @@ function ClusterCompare({ dong, profile }: { dong: DongDTO; profile?: ClusterPro
   );
 }
 
-export default function DongPanel({ dong, profile, inFilter }: { dong: DongDTO; profile?: ClusterProfile; inFilter: boolean }) {
+function flagTitle(flag: string, dong: DongDTO): string {
+  const note = dong.subtype?.NOTE;
+  if (flag === "경계") {
+    const base = `대리모델이 이 군집이라고 본 확률(P_OWN) ${dong.P_OWN.toFixed(2)} — 0.5 미만이라 인접 군집과 경계에 있는 동`;
+    return note ? `${note}\n${base}` : base;
+  }
+  return note || flag;
+}
+
+function DisabledAction({ label, hint }: { label: string; hint: string }) {
+  // disabled 버튼은 브라우저에 따라 title 이 안 뜨므로 span 에 툴팁
+  return (
+    <span title={hint} className="flex-1">
+      <button disabled className="w-full cursor-not-allowed rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-400">
+        {label}
+      </button>
+    </span>
+  );
+}
+
+export default function DongPanel({
+  dong,
+  profile,
+  inFilter,
+  rule,
+  policy,
+  resources,
+}: {
+  dong: DongDTO;
+  profile?: ClusterProfile;
+  inFilter: boolean;
+  rule?: InterventionRule;
+  policy?: LevelPolicy;
+  /** matchResources() 결과 */
+  resources: WelfareResource[];
+}) {
   const focusOnMap = useUi((s) => s.focusOnMap);
   const levelColor = LEVEL_COLOR[dong.RISK_LEVEL];
 
@@ -205,13 +242,19 @@ export default function DongPanel({ dong, profile, inFilter }: { dong: DongDTO; 
           <Badge bg={GROUP_COLOR[dong.GROUP]}>
             {dong.GROUP} {GROUP_NAME[dong.GROUP]}
           </Badge>
-          {dong.P_OWN < 0.5 && (
-            <Badge bg="#555" title="대리모델이 이 군집이라고 본 확률이 0.5 미만 — 인접 군집과 경계에 있는 동">
-              경계 동(군집 확률 {dong.P_OWN.toFixed(2)})
-            </Badge>
+          {dong.subtype && (
+            <span className="rounded-md border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700">
+              {dong.subtype.SUBTYPE_NM}
+            </span>
           )}
+          {dong.subtype?.FLAGS.map((f) => (
+            <Badge key={f} bg={FLAG_COLOR[f]} title={flagTitle(f, dong)}>
+              {f === "경계" ? `경계 동(군집 확률 ${dong.P_OWN.toFixed(2)})` : f}
+            </Badge>
+          ))}
         </div>
         <p className="mt-1.5 text-neutral-600">{GROUP_DESC[dong.GROUP]}</p>
+        {dong.subtype?.NOTE && <p className="mt-1 text-xs text-neutral-500">해석 주의: {dong.subtype.NOTE}</p>}
         {!inFilter && <p className="mt-1 text-xs text-amber-700">현재 필터 밖의 동입니다.</p>}
 
         <div className="mt-3 space-y-0.5 tabular-nums">
@@ -222,6 +265,11 @@ export default function DongPanel({ dong, profile, inFilter }: { dong: DongDTO; 
           <div className="text-neutral-600">
             50·60대 {fmtInt(dong.POP_5060)}명 / 총 {fmtInt(dong.TOT_POP_CNT)}명 / {dong.AREA_KM2.toLocaleString("ko-KR")}km²
           </div>
+          {policy && (
+            <div>
+              <span className="text-neutral-500">운영 주기:</span> {policy.PRIORITY_LABEL} · {policy.CYCLE} · {policy.ACTION_MODE}
+            </div>
+          )}
         </div>
       </Card>
 
@@ -237,7 +285,23 @@ export default function DongPanel({ dong, profile, inFilter }: { dong: DongDTO; 
         <ClusterCompare dong={dong} profile={profile} />
       </Card>
 
-      <p className="px-1 text-xs text-neutral-400">근거: dong_cluster.csv, cluster_profile.csv</p>
+      <Card title="권장 조치">
+        <RecommendedActions key={dong.EMD_CD} rule={rule} />
+      </Card>
+
+      <Card title={`연결 가능한 자원 (${resources.length}건)`}>
+        <ResourceList resources={resources} emdCd={dong.EMD_CD} />
+      </Card>
+
+      <div className="flex gap-2">
+        <DisabledAction label="브리프 만들기" hint="5단계에서 활성화" />
+        <DisabledAction label="대화에서 묻기" hint="4단계에서 활성화" />
+      </div>
+
+      <p className="px-1 text-xs text-neutral-400">
+        근거: dong_cluster.csv, cluster_profile.csv, dong_subtype.csv, level_policy.csv
+        {rule ? `, intervention_rules.csv(${rule.SUBTYPE_ID})` : ""}, welfare_resources.csv
+      </p>
     </div>
   );
 }

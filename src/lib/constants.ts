@@ -13,3 +13,13 @@ export const VARIABLES = [
   "POP_DENSITY",
 ] as const;
 export type VariableCode = (typeof VARIABLES)[number];
+
+/** dong_subtype.csv FLAG 값 (";" 로 여러 개) */
+export const FLAGS = ["탐색지구", "관찰지구", "경계"] as const;
+export type Flag = (typeof FLAGS)[number];
+
+export const parseFlags = (s: string): Flag[] =>
+  s
+    .split(";")
+    .map((x) => x.trim())
+    .filter((x): x is Flag => (FLAGS as readonly string[]).includes(x));
