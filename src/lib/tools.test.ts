@@ -85,5 +85,6 @@ test("get_validation · recommend_actions · generate_brief", () => {
   assert.equal((a.대응_규칙 as Row).SUBTYPE_ID, "HH2_FAMILY");
   const b = runTool("generate_brief", { emd_cd: "서면" }).data as Row;
   assert.match(String(b.markdown), /^# 서면\(춘천시\)/);
+  assert.ok(String(b.markdown).includes("{{SUMMARY}}"));
   assert.throws(() => runTool("nope", {}), ToolError);
 });

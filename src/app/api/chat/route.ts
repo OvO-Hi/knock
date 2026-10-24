@@ -8,6 +8,7 @@
 //   error {message}                    스트리밍 도중 실패 (이미 텍스트가 나간 뒤)
 import Anthropic from "@anthropic-ai/sdk";
 import { GROUPS, LEVELS, type Group, type RiskLevel } from "@/lib/constants";
+import { MODEL, getClient, hasCredentials } from "@/lib/claude";
 import { answerFallback } from "@/lib/fallback";
 import { buildSystemPrompt, type ChatContext } from "@/lib/prompt";
 import { TOOL_DEFS, ToolError, runTool, toolLabel } from "@/lib/tools";
@@ -15,7 +16,6 @@ import { TOOL_DEFS, ToolError, runTool, toolLabel } from "@/lib/tools";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5";
 const MAX_TOKENS = 1500;
 const MAX_TOOL_ROUNDS = 6;
 const MAX_INPUT = 2000;
@@ -26,8 +26,6 @@ interface ChatRequest {
   ctx?: ChatContext;
 }
 
-let client: Anthropic | null = null;
-const hasCredentials = () => !!(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
 
 function parseBody(body: unknown): { messages: Anthropic.MessageParam[]; ctx: ChatContext; question: string } | string {
   const b = body as ChatRequest;
@@ -84,10 +82,9 @@ export async function POST(req: Request) {
           fallback("no_api_key");
           return;
         }
-        client ??= new Anthropic();
         let sentText = false;
         try {
-          sentText = await runAgent(client, messages, ctx, send);
+          sentText = await runAgent(getClient(), messages, ctx, send);
           send("done", { mode: "ai" });
         } catch (err) {
           // 아무것도 보내기 전 실패면 폴백 답변, 도중 실패면 오류 이벤트

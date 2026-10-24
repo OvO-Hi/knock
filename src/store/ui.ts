@@ -12,7 +12,10 @@ interface UiState {
   groups: Set<Group>;
   selectedEmd: string | null;
   colorMode: ColorMode;
-  highlightTopN: number | null;
+  /** 우선순위 N — 지도 "상위 N 강조"와 우선순위 패널이 같이 쓴다 (5~20) */
+  topN: number;
+  /** 지도에서 상위 N 만 원래 색으로 */
+  highlightOn: boolean;
   leftTab: LeftTab;
   /** 지도 이동 요청 (seq 가 바뀔 때마다 flyTo) */
   focus: { emd: string; seq: number } | null;
@@ -22,7 +25,8 @@ interface UiState {
   toggleGroup: (g: Group) => void;
   select: (emd: string | null) => void;
   setColorMode: (m: ColorMode) => void;
-  setHighlightTopN: (n: number | null) => void;
+  setTopN: (n: number) => void;
+  setHighlightOn: (on: boolean) => void;
   setLeftTab: (t: LeftTab) => void;
   /** 지도 탭으로 전환 + 해당 동으로 이동 + 선택 */
   focusOnMap: (emd: string) => void;
@@ -33,7 +37,19 @@ interface UiState {
   chatDraft: { text: string; seq: number } | null;
   /** 대화창 펼치고 질문을 입력창에 넣는다 (전송은 사용자가) */
   askInChat: (text: string) => void;
+
+  /** 열려 있는 브리프 모달 */
+  brief: BriefRequest | null;
+  openBrief: (req: BriefRequest) => void;
+  closeBrief: () => void;
 }
+
+export type BriefRequest =
+  | { kind: "dong"; emd_cd: string }
+  | { kind: "quarter"; emd_cds: string[]; region?: string; n: number };
+
+export const TOP_N_MIN = 5;
+export const TOP_N_MAX = 20;
 
 const toggled = <T,>(s: Set<T>, v: T) => {
   const next = new Set(s);
@@ -48,7 +64,8 @@ export const useUi = create<UiState>((set) => ({
   groups: new Set<Group>(GROUPS),
   selectedEmd: null,
   colorMode: "level",
-  highlightTopN: null,
+  topN: 10,
+  highlightOn: false,
   leftTab: "map",
   focus: null,
 
@@ -57,7 +74,8 @@ export const useUi = create<UiState>((set) => ({
   toggleGroup: (g) => set((s) => ({ groups: toggled(s.groups, g) })),
   select: (selectedEmd) => set({ selectedEmd }),
   setColorMode: (colorMode) => set({ colorMode }),
-  setHighlightTopN: (highlightTopN) => set({ highlightTopN }),
+  setTopN: (n) => set({ topN: Math.max(TOP_N_MIN, Math.min(TOP_N_MAX, Math.round(n) || 10)) }),
+  setHighlightOn: (highlightOn) => set({ highlightOn }),
   setLeftTab: (leftTab) => set({ leftTab }),
   focusOnMap: (emd) =>
     set((s) => ({ selectedEmd: emd, leftTab: "map", focus: { emd, seq: (s.focus?.seq ?? 0) + 1 } })),
@@ -66,4 +84,8 @@ export const useUi = create<UiState>((set) => ({
   setChatOpen: (chatOpen) => set({ chatOpen }),
   chatDraft: null,
   askInChat: (text) => set((s) => ({ chatOpen: true, chatDraft: { text, seq: (s.chatDraft?.seq ?? 0) + 1 } })),
+
+  brief: null,
+  openBrief: (brief) => set({ brief }),
+  closeBrief: () => set({ brief: null }),
 }));

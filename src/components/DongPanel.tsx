@@ -192,17 +192,6 @@ function flagTitle(flag: string, dong: DongDTO): string {
   return note || flag;
 }
 
-function DisabledAction({ label, hint }: { label: string; hint: string }) {
-  // disabled 버튼은 브라우저에 따라 title 이 안 뜨므로 span 에 툴팁
-  return (
-    <span title={hint} className="flex-1">
-      <button disabled className="w-full cursor-not-allowed rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-400">
-        {label}
-      </button>
-    </span>
-  );
-}
-
 export default function DongPanel({
   dong,
   profile,
@@ -221,6 +210,7 @@ export default function DongPanel({
 }) {
   const focusOnMap = useUi((s) => s.focusOnMap);
   const askInChat = useUi((s) => s.askInChat);
+  const openBrief = useUi((s) => s.openBrief);
   const levelColor = LEVEL_COLOR[dong.RISK_LEVEL];
 
   return (
@@ -296,7 +286,12 @@ export default function DongPanel({
       </Card>
 
       <div className="flex gap-2">
-        <DisabledAction label="브리프 만들기" hint="5단계에서 활성화" />
+        <button
+          onClick={() => openBrief({ kind: "dong", emd_cd: dong.EMD_CD })}
+          className="flex-1 rounded-lg border border-neutral-900 bg-white px-3 py-2 hover:bg-neutral-50"
+        >
+          브리프 만들기
+        </button>
         <button
           onClick={() => askInChat(`${displayName(dong)}은 왜 ${dong.RISK_LEVEL}단계인가요?`)}
           className="flex-1 rounded-lg border border-neutral-900 bg-neutral-900 px-3 py-2 text-white hover:bg-neutral-700"

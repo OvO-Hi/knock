@@ -7,6 +7,7 @@ import { GROUP_DESC, GROUP_NAME, PRIORITY_LABEL, displayName } from "./labels";
 import { groupsMatch, matchResources } from "./match";
 import { parseReason } from "./reason";
 import { VARIABLE_META } from "./variables";
+import { buildDongBrief, buildQuarterBrief } from "./brief";
 
 export interface ToolResult<T = unknown> {
   data: T;
@@ -359,84 +360,17 @@ function get_validation(): ToolResult {
   };
 }
 
-/** 브리프 Markdown 뼈대. 문장 채우기는 5단계(LLM) — 여기서는 표의 값만 배치 */
+/** 브리프 템플릿 (lib/brief.ts). {{SUMMARY}}·{{MEMO}} 두 칸만 답변에서 채운다 */
 function generate_brief(input: Record<string, unknown>): ToolResult {
-  const k = getData();
-  const ids = asArray<unknown>(input.emd_cds) ?? (input.emd_cd ? [input.emd_cd] : []);
-  if (!ids.length) throw new ToolError("emd_cd 또는 emd_cds 가 필요합니다");
-  const ds = ids.map((x) => resolveDong(x, input.region, k));
-
-  if (ds.length === 1) {
-    const d = ds[0];
-    const f = flagInfo(d, k);
-    const rule = k.rules.find((r) => r.SUBTYPE_ID === f.SUBTYPE_ID);
-    const policy = k.levelPolicy.find((l) => l.RISK_LEVEL === d.RISK_LEVEL);
-    const m = matchResources(d, k.resources);
-    const details = rule ? [rule.DETAIL_1, rule.DETAIL_2, rule.DETAIL_3, rule.DETAIL_4, rule.DETAIL_5].filter(Boolean) : [];
-    const md = [
-      `# ${displayName(d)}(${d.SGG_NM}) 중장년 고립 위험 브리프`,
-      "",
-      "- 기준 기간: 2025.7~12",
-      `- 위험 수준: ${d.RISK_LEVEL}단계 (${PRIORITY_LABEL[d.RISK_LEVEL]}) · 유형: ${d.GROUP} ${GROUP_NAME[d.GROUP]}${f.SUBTYPE_NM ? ` / ${f.SUBTYPE_NM}` : ""}${f.FLAGS.length ? ` · ${f.FLAGS.join("·")}` : ""}`,
-      f.NOTE ? `- 해석 주의: ${f.NOTE}` : "",
-      "",
-      "## 핵심 수치",
-      `- 종합 점수 ${d.TOTAL_SCORE} (인구축 ${d.POP_SCORE} + 지역축 ${d.REG_SCORE})`,
-      `- 50·60대 인구 ${d.POP_5060.toLocaleString("ko-KR")}명 (총 ${d.TOT_POP_CNT.toLocaleString("ko-KR")}명)`,
-      `- 군집 판별 확률 P_OWN ${d.P_OWN}`,
-      "",
-      "## 왜 위험한가",
-      `- ${d.REASON_1}`,
-      `- ${d.REASON_2}`,
-      ...VARIABLE_META.map((v) => `- ${v.label}: 단계점수 ${d[`${v.code}_Q`]} (원값 ${v.format(d[v.code])})`),
-      "{{문장: 변수별 설명}}",
-      "",
-      "## 권장 조치",
-      rule?.CORE_ACTION ? `- 핵심: ${rule.CORE_ACTION}` : "- 핵심: (규칙표에 없음)",
-      ...details.map((t) => `- 보완: ${t}`),
-      rule?.LINK_PROGRAM ? `- 기존 사업 연계: ${rule.LINK_PROGRAM}` : "",
-      "",
-      "## 연결 자원",
-      ...([...m.own, ...m.general].length
-        ? [...m.own, ...m.general].map((r) => `- ${r.NAME} (${r.TYPE}) — ${r.SOURCE_URL.split(";")[0]}`)
-        : ["- 등록된 자원 없음"]),
-      "",
-      "## 다음 점검",
-      policy ? `- ${policy.CYCLE} · ${policy.ACTION_MODE}` : "",
-      "",
-      "## 근거 표",
-      `- dong_cluster.csv · dong_subtype.csv · intervention_rules.csv(${f.SUBTYPE_ID ?? "-"}) · level_policy.csv · welfare_resources.csv`,
-      "",
-      "_이 브리프는 생성형 AI(Claude)가 결과표를 바탕으로 작성을 보조했습니다._",
-    ]
-      .filter((x, i, a) => !(x === "" && a[i - 1] === ""))
-      .join("\n");
-    return { data: { markdown: md }, sources: ["dong_cluster.csv", "dong_subtype.csv", "intervention_rules.csv", "level_policy.csv", "welfare_resources.csv"] };
-  }
-
-  const count = (xs: (string | number)[]) => xs.reduce<Record<string, number>>((a, x) => ((a[x] = (a[x] ?? 0) + 1), a), {});
-  const md = [
-    `# 분기 우선 동 브리프 (${ds.length}곳)`,
-    "",
-    "- 기준 기간: 2025.7~12",
-    "",
-    "| 순서 | 동 | 지역 | 단계 | 군집 | 50·60대 |",
-    "|---|---|---|---|---|---|",
-    ...ds.map((d, i) => `| ${i + 1} | ${displayName(d)} | ${d.SGG_NM} | ${d.RISK_LEVEL} | ${d.GROUP} | ${d.POP_5060.toLocaleString("ko-KR")} |`),
-    "",
-    "## 동별 한 줄",
-    ...ds.map((d) => `- ${displayName(d)}: {{문장}}`),
-    "",
-    "## 분포",
-    `- 군집: ${Object.entries(count(ds.map((d) => d.GROUP))).map(([g, c]) => `${g} ${c}`).join(" / ")}`,
-    `- 단계: ${Object.entries(count(ds.map((d) => d.RISK_LEVEL))).sort(([a], [b]) => Number(b) - Number(a)).map(([l, c]) => `${l}단계 ${c}`).join(" / ")}`,
-    "",
-    "## 근거 표",
-    "- dong_cluster.csv · dong_subtype.csv · level_policy.csv",
-    "",
-    "_이 브리프는 생성형 AI(Claude)가 결과표를 바탕으로 작성을 보조했습니다._",
-  ].join("\n");
-  return { data: { markdown: md }, sources: ["dong_cluster.csv", "dong_subtype.csv", "level_policy.csv"] };
+  const ids = asArray<unknown>(input.emd_cds)?.map(String);
+  const draft =
+    ids && ids.length > 1
+      ? buildQuarterBrief({ emd_cds: ids.map((x) => resolveDong(x, input.region).EMD_CD), region: input.region as string | undefined })
+      : buildDongBrief(resolveDong(ids?.[0] ?? input.emd_cd, input.region).EMD_CD);
+  return {
+    data: { title: draft.title, markdown: draft.template, 채울_칸: ["{{SUMMARY}} 현황 요약 3문장 이내", "{{MEMO}} 담당자 메모 2문장"] },
+    sources: draft.sources,
+  };
 }
 
 // ---------------------------------------------------------------- 레지스트리

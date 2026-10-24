@@ -49,7 +49,7 @@ for (const { q, ctx } of QUESTIONS) {
   console.log(text.split("\n").map((l) => `  │ ${l}`).join("\n"));
   check("도구 호출 있음", tools.length > 0);
   check("'근거:' 출처 줄 있음", /^\**근거:/m.test(text));
-  const tokens = [...text.matchAll(/([^\s|()[\]]*?)\[\[(\d{8})\]\]/g)];
+  const tokens = [...text.matchAll(/([^\s|()[\]*]*?)\[\[(\d{8})\]\]/g)]; // ** 굵게 표시는 이름에서 제외
   const bad = tokens.filter(([, name, code]) => {
     const d = data.dongByCode.get(code);
     return !d || (name !== "" && !name.startsWith(d.EMD_NM) && !name.startsWith(displayName(d)));

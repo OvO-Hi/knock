@@ -46,13 +46,13 @@ function DongLayer({
   layers: React.RefObject<globalThis.Map<string, L.Path>>;
 }) {
   const map = useMap();
-  const { region, levels, groups, colorMode, highlightTopN, selectedEmd, focus, leftTab, select } = useUi();
+  const { region, levels, groups, colorMode, topN: n, highlightOn, selectedEmd, focus, leftTab, select } = useUi();
 
   const active = useMemo(() => {
     const f = { region, levels, groups };
     const pass = new Set(data.dongs.filter((d) => matchesFilter(d, f)).map((d) => d.EMD_CD));
-    return highlightTopN ? topN(data.dongs, f, highlightTopN) : pass;
-  }, [data.dongs, region, levels, groups, highlightTopN]);
+    return highlightOn ? topN(data.dongs, f, n) : pass;
+  }, [data.dongs, region, levels, groups, highlightOn, n]);
 
   // 이벤트 핸들러는 한 번만 바인딩되므로 최신 값은 ref 로 읽는다
   const activeRef = useRef(active);

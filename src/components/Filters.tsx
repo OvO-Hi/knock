@@ -3,6 +3,7 @@
 import { GROUPS, LEVELS } from "@/lib/constants";
 import { GROUP_COLOR, GROUP_NAME, LEVEL_COLOR, PRIORITY_LABEL, REGION_LABEL, textOn, type Region } from "@/lib/labels";
 import { useUi } from "@/store/ui";
+import TopNSelect from "./TopNSelect";
 
 const REGIONS: Region[] = ["all", "11230", "32010"];
 
@@ -55,7 +56,7 @@ function Chip({ on, color, onClick, children, title }: {
 }
 
 export default function Filters() {
-  const { region, setRegion, levels, toggleLevel, groups, toggleGroup, colorMode, setColorMode, highlightTopN, setHighlightTopN } =
+  const { region, setRegion, levels, toggleLevel, groups, toggleGroup, colorMode, setColorMode, highlightOn, setHighlightOn } =
     useUi();
 
   return (
@@ -98,22 +99,11 @@ export default function Filters() {
       <label className="flex items-center gap-1.5 text-xs">
         <input
           type="checkbox"
-          checked={highlightTopN !== null}
-          onChange={(e) => setHighlightTopN(e.target.checked ? 10 : null)}
+          checked={highlightOn}
+          onChange={(e) => setHighlightOn(e.target.checked)}
         />
         상위
-        <input
-          type="number"
-          min={1}
-          max={47}
-          disabled={highlightTopN === null}
-          value={highlightTopN ?? 10}
-          onChange={(e) => {
-            const n = Math.max(1, Math.min(47, Number(e.target.value) || 1));
-            setHighlightTopN(n);
-          }}
-          className="w-12 rounded border border-neutral-300 bg-white px-1 py-0.5 tabular-nums disabled:opacity-40"
-        />
+        <TopNSelect disabled={!highlightOn} label="강조할 상위 동 수" />
         개 동 강조
       </label>
     </div>

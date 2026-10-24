@@ -1,34 +1,43 @@
 "use client";
 // 대시보드 레이아웃 (CLAUDE.md §4.1): 헤더 / 좌 55% 지도·리스트 / 우 45% 동 패널 / 하단 대화 자리
 import dynamic from "next/dynamic";
+import { useEffect, useRef } from "react";
 import { useDashboardData } from "@/lib/useDashboardData";
 import { matchResources } from "@/lib/match";
 import { matchesFilter } from "@/lib/selectors";
 import { useUi } from "@/store/ui";
+import Brief from "./Brief";
 import Chat from "./Chat";
 import Filters from "./Filters";
 import DongList from "./DongList";
 import DongPanel from "./DongPanel";
 import FilterSummary from "./FilterSummary";
+import PriorityPanel from "./PriorityPanel";
+import SiteHeader from "./SiteHeader";
 
 const Map = dynamic(() => import("./Map"), {
   ssr: false,
   loading: () => <div className="grid h-full place-items-center text-neutral-500">지도 불러오는 중…</div>,
 });
 
-export default function Dashboard() {
+export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
   const { data, error } = useDashboardData();
-  const { leftTab, setLeftTab, selectedEmd, region, levels, groups } = useUi();
+  const { leftTab, setLeftTab, selectedEmd, region, levels, groups, focusOnMap } = useUi();
   const dong = selectedEmd ? data?.dongByCode.get(selectedEmd) : undefined;
+
+  // /?emd=코드 로 들어오면 (가이드의 동 링크) 그 동을 선택하고 지도 이동 — 1회
+  const applied = useRef(false);
+  useEffect(() => {
+    if (applied.current || !data || !initialEmd) return;
+    applied.current = true;
+    if (data.dongByCode.has(initialEmd)) focusOnMap(initialEmd);
+  }, [data, initialEmd, focusOnMap]);
 
   return (
     <div className="flex min-h-screen flex-col md:h-screen md:min-h-0">
-      <header className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-neutral-200 bg-white px-4 py-2.5">
-        <h1 className="text-base font-bold whitespace-nowrap">
-          노크 KNOCK <span className="font-normal text-neutral-500">· 중장년 고립 위험 지도</span>
-        </h1>
+      <SiteHeader current="/">
         <Filters />
-      </header>
+      </SiteHeader>
 
       <main className="flex min-h-0 flex-1 flex-col gap-3 p-3 md:flex-row">
         {/* ① 지도 + 리스트 */}
@@ -55,8 +64,11 @@ export default function Dashboard() {
                   <Map data={data} />
                 </div>
                 {leftTab === "list" && (
-                  <div className="absolute inset-0 z-[1100] bg-white">
-                    <DongList dongs={data.dongs} />
+                  <div className="absolute inset-0 z-[1100] flex flex-col bg-white">
+                    <PriorityPanel />
+                    <div className="min-h-0 flex-1">
+                      <DongList dongs={data.dongs} />
+                    </div>
                   </div>
                 )}
               </>
@@ -84,6 +96,7 @@ export default function Dashboard() {
 
       {/* ③ 에이전트 대화 */}
       <Chat data={data} />
+      <Brief />
     </div>
   );
 }
