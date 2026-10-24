@@ -4,20 +4,12 @@ import fs from "node:fs";
 import path from "node:path";
 import Papa from "papaparse";
 
-export const GROUPS = ["HH1", "HH2", "HL", "LH", "LL"] as const;
-export type Group = (typeof GROUPS)[number];
-export type RiskLevel = 1 | 2 | 3 | 4 | 5;
+import { GROUPS, VARIABLES, type Group, type RiskLevel, type VariableCode } from "./constants";
+
+export { GROUPS, VARIABLES };
+export type { Group, RiskLevel, VariableCode };
 /** *_Q 단계점수 (시군구 안 5분위, 5 = 위험) */
 export type Quintile = 1 | 2 | 3 | 4 | 5;
-
-export const VARIABLES = [
-  "HH1_EXPO_5060",
-  "MALE_SHARE_5060",
-  "VISIBLE_IDX_50P",
-  "TIME_ENTROPY",
-  "POP_DENSITY",
-] as const;
-export type VariableCode = (typeof VARIABLES)[number];
 
 export interface DongRow {
   EMD_CD: string;
