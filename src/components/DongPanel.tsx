@@ -2,7 +2,8 @@
 // 동 상세 패널 (CLAUDE.md §4.3). 권장 조치·연결 자원·브리프는 3·5단계에서 추가.
 import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { DongDTO } from "@/lib/api-types";
-import type { ClusterProfile, InterventionRule, LevelPolicy, WelfareResource } from "@/lib/data";
+import type { ClusterProfile, InterventionRule, LevelPolicy } from "@/lib/data";
+import type { ResourceMatch } from "@/lib/match";
 import type { RiskLevel } from "@/lib/constants";
 import {
   FLAG_COLOR,
@@ -215,10 +216,11 @@ export default function DongPanel({
   inFilter: boolean;
   rule?: InterventionRule;
   policy?: LevelPolicy;
-  /** matchResources() 결과 */
-  resources: WelfareResource[];
+  /** lib/match.ts matchResources() 결과 */
+  resources: ResourceMatch;
 }) {
   const focusOnMap = useUi((s) => s.focusOnMap);
+  const askInChat = useUi((s) => s.askInChat);
   const levelColor = LEVEL_COLOR[dong.RISK_LEVEL];
 
   return (
@@ -289,13 +291,18 @@ export default function DongPanel({
         <RecommendedActions key={dong.EMD_CD} rule={rule} />
       </Card>
 
-      <Card title={`연결 가능한 자원 (${resources.length}건)`}>
-        <ResourceList resources={resources} emdCd={dong.EMD_CD} />
+      <Card title={`연결 가능한 자원 (${resources.own.length + resources.general.length}건)`}>
+        <ResourceList key={dong.EMD_CD} match={resources} emdCd={dong.EMD_CD} />
       </Card>
 
       <div className="flex gap-2">
         <DisabledAction label="브리프 만들기" hint="5단계에서 활성화" />
-        <DisabledAction label="대화에서 묻기" hint="4단계에서 활성화" />
+        <button
+          onClick={() => askInChat(`${displayName(dong)}은 왜 ${dong.RISK_LEVEL}단계인가요?`)}
+          className="flex-1 rounded-lg border border-neutral-900 bg-neutral-900 px-3 py-2 text-white hover:bg-neutral-700"
+        >
+          대화에서 묻기
+        </button>
       </div>
 
       <p className="px-1 text-xs text-neutral-400">

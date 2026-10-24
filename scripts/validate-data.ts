@@ -90,10 +90,13 @@ try {
       (noSource.length ? `, 출처 없음 ${noSource.map((r) => r.RES_ID)}` : "") +
       (badUrl.length ? `, URL 형식 오류 ${badUrl.map((r) => r.RES_ID)}` : ""));
 
-  const badMatch = data.resources.filter((r) =>
-    r.MATCH_GROUPS.split(";").filter(Boolean).some((g) => !(GROUPS as readonly string[]).includes(g)),
-  );
-  check("MATCH_GROUPS 값이 GROUP 집합 안", !badMatch.length, badMatch.map((r) => `${r.RES_ID}:${r.MATCH_GROUPS}`).join(", "));
+  // MATCH_GROUPS: GROUP 들을 ";" 로 잇거나, 단독 "ALL"
+  const badMatch = data.resources.filter((r) => {
+    const gs = r.MATCH_GROUPS.split(";").map((g) => g.trim()).filter(Boolean);
+    if (gs.includes("ALL")) return gs.length !== 1;
+    return gs.some((g) => !(GROUPS as readonly string[]).includes(g));
+  });
+  check("MATCH_GROUPS 값이 GROUP 집합 또는 ALL", !badMatch.length, badMatch.map((r) => `${r.RES_ID}:${r.MATCH_GROUPS}`).join(", "));
 
   const badEmd = data.resources.filter((r) => r.EMD_CD && !data.dongByCode.has(r.EMD_CD));
   check("welfare_resources EMD_CD 유효", !badEmd.length, badEmd.map((r) => r.RES_ID).join(","));

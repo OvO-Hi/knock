@@ -26,6 +26,13 @@ interface UiState {
   setLeftTab: (t: LeftTab) => void;
   /** 지도 탭으로 전환 + 해당 동으로 이동 + 선택 */
   focusOnMap: (emd: string) => void;
+
+  chatOpen: boolean;
+  setChatOpen: (open: boolean) => void;
+  /** 대화 입력창에 넣을 초안 (seq 가 바뀔 때마다 입력창에 반영 + 포커스) */
+  chatDraft: { text: string; seq: number } | null;
+  /** 대화창 펼치고 질문을 입력창에 넣는다 (전송은 사용자가) */
+  askInChat: (text: string) => void;
 }
 
 const toggled = <T,>(s: Set<T>, v: T) => {
@@ -54,4 +61,9 @@ export const useUi = create<UiState>((set) => ({
   setLeftTab: (leftTab) => set({ leftTab }),
   focusOnMap: (emd) =>
     set((s) => ({ selectedEmd: emd, leftTab: "map", focus: { emd, seq: (s.focus?.seq ?? 0) + 1 } })),
+
+  chatOpen: false,
+  setChatOpen: (chatOpen) => set({ chatOpen }),
+  chatDraft: null,
+  askInChat: (text) => set((s) => ({ chatOpen: true, chatDraft: { text, seq: (s.chatDraft?.seq ?? 0) + 1 } })),
 }));

@@ -2,8 +2,10 @@
 // 대시보드 레이아웃 (CLAUDE.md §4.1): 헤더 / 좌 55% 지도·리스트 / 우 45% 동 패널 / 하단 대화 자리
 import dynamic from "next/dynamic";
 import { useDashboardData } from "@/lib/useDashboardData";
-import { matchResources, matchesFilter } from "@/lib/selectors";
+import { matchResources } from "@/lib/match";
+import { matchesFilter } from "@/lib/selectors";
 import { useUi } from "@/store/ui";
+import Chat from "./Chat";
 import Filters from "./Filters";
 import DongList from "./DongList";
 import DongPanel from "./DongPanel";
@@ -80,10 +82,8 @@ export default function Dashboard() {
         </aside>
       </main>
 
-      {/* ③ 에이전트 대화 — 4단계에서 구현 */}
-      <footer className="flex h-14 shrink-0 items-center border-t border-neutral-200 bg-white px-4 text-neutral-500">
-        에이전트에게 묻기 (준비 중)
-      </footer>
+      {/* ③ 에이전트 대화 */}
+      <Chat data={data} />
     </div>
   );
 }
