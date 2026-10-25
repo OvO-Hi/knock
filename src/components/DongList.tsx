@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import type { DongDTO } from "@/lib/api-types";
 import { GROUP_COLOR, LEVEL_COLOR, displayName, fmtInt, textOn } from "@/lib/labels";
 import { byPriority, matchesFilter } from "@/lib/selectors";
-import { tooltipText } from "@/lib/tooltip";
 import { useUi } from "@/store/ui";
 
 type SortKey = "priority" | "name" | "region" | "level" | "group" | "total" | "pop5060" | "pop" | "reg";
@@ -71,9 +70,7 @@ export default function DongList({ dongs }: { dongs: DongDTO[] }) {
               onClick={() => focusOnMap(d.EMD_CD)}
               className={`cursor-pointer border-b border-neutral-100 ${d.EMD_CD === selectedEmd ? "bg-amber-50" : "hover:bg-neutral-50"}`}
             >
-              <td className="px-3 py-1.5 font-medium whitespace-nowrap" title={tooltipText(d)}>
-                {displayName(d)}
-              </td>
+              <td className="px-3 py-1.5 font-medium whitespace-nowrap">{displayName(d)}</td>
               <td className="px-3 py-1.5 text-neutral-600">{d.SGG_NM}</td>
               <td className="px-3 py-1.5 text-right">
                 <span

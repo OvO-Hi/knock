@@ -9,7 +9,6 @@ import type { DashboardData } from "@/lib/useDashboardData";
 import type { EmdFeatureProps } from "@/lib/api-types";
 import { GROUP_COLOR, LEVEL_COLOR, displayName } from "@/lib/labels";
 import { matchesFilter, topN } from "@/lib/selectors";
-import { tooltipHtml } from "@/lib/tooltip";
 import { useUi } from "@/store/ui";
 import Legend from "./Legend";
 
@@ -69,7 +68,7 @@ function DongLayer({
     const d = data.dongByCode.get(code);
     layers.current.set(code, layer as L.Path);
     const label = d ? `${displayName(d)} ${d.RISK_LEVEL}단계 ${d.GROUP}` : feature.properties.EMD_NM;
-    if (d) layer.bindTooltip(tooltipHtml(d), { sticky: true, className: "knock-tip" });
+    if (d) layer.bindTooltip(`${displayName(d)} · ${d.RISK_LEVEL}단계 · ${d.GROUP}`, { sticky: true });
     layer.on("click", () => {
       if (activeRef.current.has(code)) selectRef.current(code);
     });
