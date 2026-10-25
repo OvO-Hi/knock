@@ -359,7 +359,7 @@ export default function Chat({ data }: { data: DashboardData | null }) {
               )}
               {m.mode === "fallback" && (
                 <span className="mb-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[11px] text-amber-800">
-                  (규칙 기반 답변 — AI 연결 안 됨)
+                  (규칙 기반 답변, AI 연결 안 됨)
                 </span>
               )}
               {m.tools.map((t, i) => (

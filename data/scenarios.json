@@ -3,30 +3,83 @@
     {
       "id": "A",
       "title": "A · 춘천시 복지정책과",
-      "persona": "춘천시 복지정책과 담당자 — 이번 분기 외곽 면 지역 우선 대상 선정",
-      "state": { "region": "32010", "levels": [5], "groups": ["HH1", "HH2", "HL", "LH", "LL"], "selectedEmd": null, "tab": "priority" },
-      "questions": ["춘천 외곽 면 중 이번 분기 어디부터 가야 해요?", "서면은 왜 5단계예요?", "서면 브리프 만들어줘"]
+      "persona": "춘천시 복지정책과 담당자, 이번 분기 외곽 면 지역 우선 대상 선정",
+      "state": {
+        "region": "32010",
+        "levels": [
+          5
+        ],
+        "groups": [
+          "HH1",
+          "HH2",
+          "HL",
+          "LH",
+          "LL"
+        ],
+        "selectedEmd": null,
+        "tab": "priority"
+      },
+      "questions": [
+        "춘천 외곽 면 중 이번 분기 어디부터 가야 해요?",
+        "서면은 왜 5단계예요?",
+        "서면 브리프 만들어줘"
+      ]
     },
     {
       "id": "B",
       "title": "B · 강남구 담당자",
-      "persona": "강남구 복지정책과 담당자 — 소득 기준이 아닌 위험도 기준 발굴",
-      "state": { "region": "11230", "levels": [1, 2, 3, 4, 5], "groups": ["HH1", "HH2", "HL", "LH", "LL"], "selectedEmd": "11230640", "tab": "map" },
-      "questions": ["역삼1동이 왜 5단계예요? 부자 동네 아닌가요?", "삼성1동은요?"]
+      "persona": "강남구 복지정책과 담당자, 소득 기준이 아닌 위험도 기준 발굴",
+      "state": {
+        "region": "11230",
+        "levels": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "groups": [
+          "HH1",
+          "HH2",
+          "HL",
+          "LH",
+          "LL"
+        ],
+        "selectedEmd": "11230640",
+        "tab": "map"
+      },
+      "questions": [
+        "역삼1동이 왜 5단계예요? 부자 동네 아닌가요?",
+        "삼성1동은요?"
+      ]
     },
     {
       "id": "C",
       "title": "C · 춘천 효자동 복지센터",
-      "persona": "효자동 행정복지센터 사례관리 담당자 — 대학가 속 중장년 발굴",
-      "state": { "region": "32010", "levels": [1, 2, 3, 4, 5], "groups": ["HH1", "HH2", "HL", "LH", "LL"], "selectedEmd": "32010640", "tab": "map" },
-      "questions": ["효자2동은 대학가인데 왜 위험 신호가 잡혔죠?", "효자2동 청년 1인 가구랑은 뭐가 다른가요?"]
-    },
-    {
-      "id": "D",
-      "title": "D · 신뢰도 질문 (예비)",
-      "persona": "심사위원·관리자 — 이 결과를 믿어도 되는가",
-      "state": { "region": "all", "levels": [1, 2, 3, 4, 5], "groups": ["HH1", "HH2", "HL", "LH", "LL"], "selectedEmd": null, "tab": "map" },
-      "questions": ["이 결과 믿어도 돼요?"]
+      "persona": "효자동 행정복지센터 사례관리 담당자, 대학가 속 중장년 발굴",
+      "state": {
+        "region": "32010",
+        "levels": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "groups": [
+          "HH1",
+          "HH2",
+          "HL",
+          "LH",
+          "LL"
+        ],
+        "selectedEmd": "32010640",
+        "tab": "map"
+      },
+      "questions": [
+        "효자2동은 대학가인데 왜 위험 신호가 잡혔죠?",
+        "효자2동 청년 1인 가구랑은 뭐가 다른가요?"
+      ]
     }
   ]
 }

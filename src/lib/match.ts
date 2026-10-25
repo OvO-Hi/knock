@@ -9,11 +9,11 @@ export interface MatchDong {
 }
 
 export interface ResourceMatch {
-  /** 1) EMD_CD 가 이 동인 사업 — 항상 표시, 맨 위 */
+  /** 1) EMD_CD 가 이 동인 사업: 항상 표시, 맨 위 */
   own: WelfareResource[];
   /** 2) EMD_CD 빈칸 + SGG_CD 일치 + (GROUP 포함 or ALL) */
   general: WelfareResource[];
-  /** 3) 다른 동 사업 + SGG_CD 일치 + GROUP 매칭 — "다른 동 사례(확산 가능)" */
+  /** 3) 다른 동 사업 + SGG_CD 일치 + GROUP 매칭: "다른 동 사례(확산 가능)" */
   otherDongs: WelfareResource[];
 }
 

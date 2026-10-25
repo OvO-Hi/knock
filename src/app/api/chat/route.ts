@@ -5,7 +5,7 @@
 //   tool  {name, input, label}         도구 호출 ("조회 중: get_dong(서면)")
 //   text  {delta}                      답변 텍스트 조각 (스트리밍)
 //   guard {violations, retried, removed}  사후 검사 결과
-//   final {text}                       검사 후 수정본 — 프론트는 본문을 이걸로 교체
+//   final {text}                       검사 후 수정본. 프론트는 본문을 이걸로 교체
 //   done  {mode}
 //   error {message}                    스트리밍 도중 실패 (이미 텍스트가 나간 뒤)
 import Anthropic from "@anthropic-ai/sdk";
@@ -15,7 +15,7 @@ import { MODEL, getClient, hasCredentials, requestParams } from "@/lib/claude";
 import { getData } from "@/lib/data";
 import { lookupDemoCache, type DemoCacheEntry } from "@/lib/demoCache";
 import { answerFallback } from "@/lib/fallback";
-import { collectFacts, findViolations, formatViolations, removeViolations, type Violation } from "@/lib/guard";
+import { collectFacts, findViolations, formatViolations, hasDashes, removeViolations, replaceDashes, type Violation } from "@/lib/guard";
 import { buildSystemPrompt, type ChatContext } from "@/lib/prompt";
 import { TOOL_DEFS, ToolError, runTool, toolLabel, type ToolResult } from "@/lib/tools";
 
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
       };
 
       try {
-        // 첫 질문만 캐시 대상 (이어지는 대화는 맥락이 달라질 수 있음 — 데모 시나리오는 순서대로 묻는다)
+        // 첫 질문만 캐시 대상 (이어지는 대화는 맥락이 달라질 수 있음. 데모 시나리오는 순서대로 묻는다)
         const hit = lookupDemoCache(question);
         if (hit) {
           await replayCache(hit, send);
@@ -150,7 +150,7 @@ interface AgentRun {
   text: string;
   /** 이번 턴 도구 결과 (사후 검사용) */
   toolResults: ToolResult[];
-  /** 마지막 assistant 응답까지 포함한 대화 (재요청에 그대로 이어 붙인다 — append-only) */
+  /** 마지막 assistant 응답까지 포함한 대화 (재요청에 그대로 이어 붙인다, append-only) */
   messages: BetaMessageParam[];
   system: ReturnType<typeof buildSystemPrompt>;
 }
@@ -231,6 +231,8 @@ async function guardAnswer(client: Anthropic, run: AgentRun, send: Send) {
   const first = findViolations(run.text, facts);
   if (!first.length) {
     send("guard", { violations: [], retried: false, removed: false });
+    // 줄표만 있으면 가운뎃점으로 바꾼 수정본으로 교체
+    if (hasDashes(run.text)) send("final", { text: replaceDashes(run.text) });
     return;
   }
   console.warn("[chat] 사후 검사 위반", first);
@@ -256,12 +258,12 @@ async function guardAnswer(client: Anthropic, run: AgentRun, send: Send) {
     }
   } catch (e) {
     if (!(e instanceof Anthropic.APIError)) throw e;
-    console.error("[chat] 재요청 실패 — 문장 제거로 처리", e.status);
+    console.error("[chat] 재요청 실패, 문장 제거로 처리", e.status);
   }
   const removed = remaining.length > 0;
   if (removed) text = removeViolations(text, remaining);
   send("guard", { violations: first, retried: true, removed, remaining });
-  send("final", { text });
+  send("final", { text: replaceDashes(text) });
 }
 
 function safeLabel(name: string, input: unknown): string {

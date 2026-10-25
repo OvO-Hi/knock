@@ -94,7 +94,7 @@ export interface ShapRow {
   합계: number;
 }
 
-/** dong_subtype.csv — FLAG 는 ";" 로 여러 개 */
+/** dong_subtype.csv: FLAG 는 ";" 로 여러 개 */
 export interface DongSubtype {
   EMD_CD: string;
   SUBTYPE_ID: string;

@@ -75,3 +75,32 @@ body {
   stroke: #1d4ed8;
   stroke-width: 4px;
 }
+
+/* 지도 호버 툴팁: 이름·단계·군집 / 하위유형 / 플래그·NOTE */
+.leaflet-tooltip.knock-tip {
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+  max-width: 260px;
+  white-space: normal;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+.knock-tip-head {
+  font-weight: 600;
+}
+.knock-tip-sub {
+  color: #555;
+}
+.knock-tip-flag {
+  margin-top: 2px;
+  color: #333;
+}
+.knock-tip-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  margin-right: 4px;
+  vertical-align: 0;
+}

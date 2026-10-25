@@ -29,7 +29,7 @@ export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
   const { leftTab, setLeftTab, selectedEmd, region, levels, groups, focusOnMap } = useUi();
   const dong = selectedEmd ? data?.dongByCode.get(selectedEmd) : undefined;
 
-  // /?emd=코드 로 들어오면 (가이드의 동 링크) 그 동을 선택하고 지도 이동 — 1회
+  // /?emd=코드 로 들어오면 (가이드의 동 링크) 그 동을 선택하고 지도 이동 (1회)
   const applied = useRef(false);
   useEffect(() => {
     if (applied.current || !data || !initialEmd) return;
@@ -102,7 +102,7 @@ export default function Dashboard({ initialEmd }: { initialEmd?: string }) {
         </aside>
       </main>
 
-      {/* ③ 에이전트 대화 — 고정 오버레이 */}
+      {/* ③ 에이전트 대화: 고정 오버레이 */}
       <Chat data={data} />
       <Brief />
     </div>

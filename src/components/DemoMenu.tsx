@@ -1,5 +1,5 @@
 "use client";
-// 헤더 "데모 ▼" — 시나리오 A~D (data/scenarios.json) 선택 시 화면 상태 세팅 + 대화창 펼침 + 질문 칩 교체
+// 헤더 "데모 ▼": 시나리오 A~C (data/scenarios.json) 선택 시 화면 상태 세팅 + 대화창 펼침 + 질문 칩 교체
 import scenarioFile from "../../data/scenarios.json";
 import { useUi, type Scenario } from "@/store/ui";
 

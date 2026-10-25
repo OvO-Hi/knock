@@ -2,6 +2,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { GROUPS, type Group, type RiskLevel } from "./constants";
 import { getData } from "./data";
+import { replaceDashes } from "./guard";
 import { GROUP_DESC, GROUP_NAME, REGION_LABEL, displayName, type Region } from "./labels";
 
 /** 프론트가 보내는 현재 화면 상태 */
@@ -31,6 +32,7 @@ const GUARDRAILS = `## 가드레일
 11. 춘천 '강남동'은 동 이름이다. 사용자가 '강남구' 또는 '강남'을 지역으로 쓰면 region=강남구로 해석한다. 답변에서 춘천 강남동은 "강남동(춘천)"으로 쓴다.
 12. SHAP 판별 근거가 '안전 쪽'이면 위험 원인이 아니라 "이 변수는 오히려 안전 쪽"이라고 구분한다(LH·LL에서 흔함).
 13. 두 동을 비교하는 질문("A는 B보다 안전한가")에는 두 동 모두 도구로 조회한 뒤, 단계·군집·변수 단계점수를 나란히 말한다. "안전하다/위험하다"로 단정하지 않고 "먼저 살필 순서가 앞/뒤"로 말한다.
+14. 답변·브리프 문장에 줄표(\u2014, \u2013)를 쓰지 않는다. 가운뎃점(·)·쉼표·괄호·마침표로 대신한다. 예: "생활 리듬: 위험 쪽 신호", "AI 미연결(규칙 기반 요약)".
 답변을 마친 뒤 서버가 숫자·지명을 도구 결과와 대조해 검사한다. 어긋난 문장은 지워진다.`;
 
 const FORMAT = `## 답변 형식
@@ -55,7 +57,7 @@ function staticPrompt(): string {
     FORMAT,
     `## 군집 5종 (첫 글자 = 인구축, 둘째 = 지역축)\n${groups}`,
     `## 위험도 단계별 운영 정책 (level_policy.csv)\n${policy}\n우선순위 규칙: 단계↓ → 같은 단계 안에서 50·60대 인구↓ (prioritize 도구).`,
-    `## 변수 설명서 (variable_dictionary.md 전문)\n${d.variableDictionary}`,
+    `## 변수 설명서 (variable_dictionary.md 전문, 줄표는 가운뎃점으로 바꿔 넣음)\n${replaceDashes(d.variableDictionary)}`,
   ].join("\n\n");
 }
 

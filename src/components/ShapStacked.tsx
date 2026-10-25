@@ -1,5 +1,5 @@
 "use client";
-// SHAP 변수 중요도 — 군집별 누적 막대 (/about)
+// SHAP 변수 중요도: 군집별 누적 막대 (/about)
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { GROUPS } from "@/lib/constants";
 import { GROUP_COLOR } from "@/lib/labels";

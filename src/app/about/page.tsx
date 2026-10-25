@@ -1,11 +1,11 @@
-// /about — 이 지도는 어떻게 만들었나 (CLAUDE.md §4.8)
+// /about: 이 지도는 어떻게 만들었나 (CLAUDE.md §4.8)
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import ShapStacked from "@/components/ShapStacked";
 import { getData } from "@/lib/data";
 import { VARIABLE_META } from "@/lib/variables";
 
-export const metadata: Metadata = { title: "이 지도는 어떻게 만들었나 — 노크" };
+export const metadata: Metadata = { title: "이 지도는 어떻게 만들었나 · 노크" };
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -53,13 +53,13 @@ export default function AboutPage() {
         <Card title="데이터">
           <ul className="list-disc space-y-1 pl-5">
             <li>
-              <b>SKT 유동인구</b> 2025.7~12 — 성·연령·시간대별, 50m 격자를 행정동으로 합산
+              <b>SKT 유동인구</b> 2025.7~12: 성·연령·시간대별, 50m 격자를 행정동으로 합산
             </li>
             <li>
-              <b>주민등록 인구·세대</b> — 행정동별 성·연령 인구, 세대원 수별 세대
+              <b>주민등록 인구·세대</b>: 행정동별 성·연령 인구, 세대원 수별 세대
             </li>
             <li>
-              <b>행정동 면적</b> — 인구밀도 계산용
+              <b>행정동 면적</b>: 인구밀도 계산용
             </li>
           </ul>
           <p className="mt-2 text-neutral-600">분석 단위: 행정동 {d.dongs.length}개 (강남구 22 · 춘천시 25). 서비스에는 집계 결과표만 들어 있습니다.</p>
@@ -104,7 +104,7 @@ export default function AboutPage() {
               <b>군집</b>: 시군구 내 z-score로 만든 2D(인구축·지역축) 좌표에 K-means K={v.K}. 군집 이름(HH/HL/LH/LL)은 5분위 축 점수 기준.
             </li>
             <li>
-              <b>위험도 5단계</b>: 종합점수(인구축 + 지역축)를 47개 동 전체에서 5분위 — 5단계 = 상위 20%, 먼저 살필 순서.
+              <b>위험도 5단계</b>: 종합점수(인구축 + 지역축)를 47개 동 전체에서 5분위. 5단계 = 상위 20%, 먼저 살필 순서.
             </li>
           </ol>
         </Card>
@@ -154,7 +154,7 @@ export default function AboutPage() {
           </div>
 
           <h3 className="mt-5 mb-1 font-semibold">SHAP 변수 중요도 (shap_importance.csv)</h3>
-          <p className="mb-1 text-xs text-neutral-500">대리모델이 각 군집을 판별할 때 변수별 평균 |SHAP| — 막대 길이 = 5개 군집 합계</p>
+          <p className="mb-1 text-xs text-neutral-500">대리모델이 각 군집을 판별할 때 변수별 평균 |SHAP| (막대 길이 = 5개 군집 합계)</p>
           <ShapStacked data={shapRows} />
         </Card>
 
@@ -184,7 +184,7 @@ export default function AboutPage() {
         <Card title="생성형 AI 사용 명시">
           <ul className="list-disc space-y-1 pl-5">
             <li>
-              <b>에이전트 본체</b>: Claude API (tool use) — 결과표를 조회 전용 도구로 읽어 설명하고, 숫자는 결과표 값만 인용한다.
+              <b>에이전트 본체</b>: Claude API (tool use). 결과표를 조회 전용 도구로 읽어 설명하고, 숫자는 결과표 값만 인용한다.
             </li>
             <li>
               <b>개발 보조</b>: Claude Code
@@ -199,7 +199,7 @@ export default function AboutPage() {
         </Card>
 
         <Card title="팀">
-          <p>노크 — 고정은 · 이세연 · 이은나</p>
+          <p>노크: 고정은 · 이세연 · 이은나</p>
         </Card>
       </main>
     </div>

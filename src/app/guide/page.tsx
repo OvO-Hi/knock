@@ -1,4 +1,4 @@
-// /guide — 군집 유형 가이드 (CLAUDE.md §4.7)
+// /guide: 군집 유형 가이드 (CLAUDE.md §4.7)
 import Link from "next/link";
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
@@ -8,7 +8,7 @@ import { getData, type ClusterProfile } from "@/lib/data";
 import { GROUP_COLOR, GROUP_DESC, GROUP_NAME, LEVEL_COLOR, displayName, textOn } from "@/lib/labels";
 import { VARIABLE_META } from "@/lib/variables";
 
-export const metadata: Metadata = { title: "군집 가이드 — 노크" };
+export const metadata: Metadata = { title: "군집 가이드 · 노크" };
 
 const f1 = (n: number) => n.toFixed(1);
 const DETAILS = ["DETAIL_1", "DETAIL_2", "DETAIL_3", "DETAIL_4", "DETAIL_5"] as const;
@@ -65,7 +65,7 @@ export default function GuidePage() {
                 </span>
                 <h2 className="text-lg font-semibold">{GROUP_NAME[g]}</h2>
                 <span className="text-neutral-500 tabular-nums">{p.N_DONG}개 동</span>
-                <span className="text-neutral-700">— {GROUP_DESC[g]}</span>
+                <span className="text-neutral-700">· {GROUP_DESC[g]}</span>
               </div>
               <p className="mt-1 text-xs text-neutral-500 tabular-nums">
                 인구축 {f1(p.POP_SCORE)} · 지역축 {f1(p.REG_SCORE)} (단계점수 평균, 5 = 위험)
@@ -119,7 +119,7 @@ export default function GuidePage() {
                           <td className="py-2 pr-3 font-medium">{r.SUBTYPE_NM}</td>
                           <td className="py-2 pr-3 text-neutral-600">{r.TARGET_DONGS}</td>
                           <td className="py-2 pr-3">
-                            <span className="font-semibold">{r.CORE_ACTION || "—"}</span>
+                            <span className="font-semibold">{r.CORE_ACTION || "기재 없음"}</span>
                             {details.length > 0 && (
                               <details className="mt-1">
                                 <summary className="cursor-pointer text-xs text-neutral-500">보완 접근 {details.length}개</summary>
@@ -131,7 +131,7 @@ export default function GuidePage() {
                               </details>
                             )}
                           </td>
-                          <td className="py-2 text-neutral-700">{r.LINK_PROGRAM || "—"}</td>
+                          <td className="py-2 text-neutral-700">{r.LINK_PROGRAM || "기재 없음"}</td>
                         </tr>
                       );
                     })}

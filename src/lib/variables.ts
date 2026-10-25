@@ -1,4 +1,4 @@
-// 변수 5개 표기 정보 — data/variable_dictionary.md 에서 옮겨 적음 (바뀌면 같이 고칠 것)
+// 변수 5개 표기 정보: data/variable_dictionary.md 에서 옮겨 적음 (바뀌면 같이 고칠 것)
 import type { VariableCode } from "./constants";
 
 export interface VariableMeta {

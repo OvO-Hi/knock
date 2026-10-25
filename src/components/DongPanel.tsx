@@ -157,7 +157,7 @@ function Reasons({ dong }: { dong: DongDTO }) {
         const safe = r.side === "안전";
         return (
           <li key={i} className={safe ? "text-neutral-500" : ""}>
-            <span className="font-medium">{r.label}</span> — {r.side} 쪽 신호{" "}
+            <span className="font-medium">{r.label}</span>: {r.side} 쪽 신호{" "}
             <span className="tabular-nums">(SHAP {r.shap >= 0 ? "+" : ""}{r.shap.toFixed(2)})</span>
             {safe && <div className="text-xs">이 변수는 오히려 안전 쪽</div>}
           </li>
@@ -207,7 +207,7 @@ function ClusterCompare({ dong, profile }: { dong: DongDTO; profile?: ClusterPro
 function flagTitle(flag: string, dong: DongDTO): string {
   const note = dong.subtype?.NOTE;
   if (flag === "경계") {
-    const base = `대리모델이 이 군집이라고 본 확률(P_OWN) ${dong.P_OWN.toFixed(2)} — 0.5 미만이라 인접 군집과 경계에 있는 동`;
+    const base = `대리모델이 이 군집이라고 본 확률(P_OWN) ${dong.P_OWN.toFixed(2)}. 0.5 미만이라 인접 군집과 경계에 있는 동`;
     return note ? `${note}\n${base}` : base;
   }
   return note || flag;

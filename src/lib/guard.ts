@@ -132,3 +132,16 @@ export function removeViolations(text: string, vs: Violation[]): string {
     ? `${cleaned.slice(0, src.index).trim()}\n\n${REMOVED_NOTE}${src[0]}`
     : `${cleaned}\n\n${REMOVED_NOTE}`;
 }
+
+/**
+ * 줄표(em dash U+2014, en dash U+2013) 치환: 숫자 사이 en dash는 물결(~), 나머지는 가운뎃점(·).
+ * 답변·브리프 문장 표기 규칙 (CLAUDE.md §5.2).
+ */
+export function replaceDashes(text: string): string {
+  return text
+    .replace(/(\d)\s*\u2013\s*(\d)/g, "$1~$2")
+    .replace(/\s*[\u2014\u2013]+\s*/g, " · ")
+    .replace(/^ · /gm, "· ");
+}
+
+export const hasDashes = (text: string) => /[\u2014\u2013]/.test(text);

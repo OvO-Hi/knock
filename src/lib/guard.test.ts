@@ -27,3 +27,11 @@ test("위반 문장 제거 + 안내 한 줄, 근거 줄 유지", () => {
   assert.ok(out.includes(REMOVED_NOTE));
   assert.ok(out.trim().endsWith("근거: dong_cluster.csv"));
 });
+
+test("줄표 치환: 가운뎃점·숫자 범위는 물결", async () => {
+  const { replaceDashes, hasDashes } = await import("./guard");
+  assert.equal(replaceDashes("생활 리듬 \u2014 위험 쪽 신호"), "생활 리듬 · 위험 쪽 신호");
+  assert.equal(replaceDashes("1\u20135점"), "1~5점");
+  assert.equal(replaceDashes("- 사업 (유형) \u2014 [출처](https://a-b.kr)"), "- 사업 (유형) · [출처](https://a-b.kr)");
+  assert.ok(!hasDashes(replaceDashes("a\u2014b\u2013c")));
+});

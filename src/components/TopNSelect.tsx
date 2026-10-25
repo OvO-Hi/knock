@@ -1,5 +1,5 @@
 "use client";
-// 우선순위 N (5~20) — 지도 "상위 N 강조"와 우선순위 패널 공용
+// 우선순위 N (5~20): 지도 "상위 N 강조"와 우선순위 패널 공용
 import { TOP_N_MAX, TOP_N_MIN, useUi } from "@/store/ui";
 
 const OPTIONS = Array.from({ length: TOP_N_MAX - TOP_N_MIN + 1 }, (_, i) => TOP_N_MIN + i);

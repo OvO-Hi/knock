@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { FLAGS, type Flag, type Group } from "@/lib/constants";
 import { GROUP_COLOR, LEVEL_COLOR, REGION_LABEL, fmtInt, textOn } from "@/lib/labels";
 import { toastError } from "@/store/toast";
+import { tooltipText } from "@/lib/tooltip";
+import { useDashboardData } from "@/lib/useDashboardData";
 import { useUi } from "@/store/ui";
 import TopNSelect from "./TopNSelect";
 
@@ -24,6 +26,7 @@ type AdminType = "" | "읍면" | "동";
 
 export default function PriorityPanel() {
   const { region, topN, selectedEmd, select, openBrief } = useUi();
+  const { data } = useDashboardData();
   const [adminType, setAdminType] = useState<AdminType>("");
   const [exclude, setExclude] = useState<Flag[]>([]);
   const [rows, setRows] = useState<PriorityRow[] | null>(null);
@@ -105,7 +108,10 @@ export default function PriorityPanel() {
                   className={`cursor-pointer border-t border-neutral-100 ${r.EMD_CD === selectedEmd ? "bg-amber-50" : "hover:bg-white"}`}
                 >
                   <td className="py-1 pr-2">{r.순서}</td>
-                  <td className="py-1 pr-2 font-medium whitespace-nowrap">
+                  <td
+                    className="py-1 pr-2 font-medium whitespace-nowrap"
+                    title={data?.dongByCode.get(r.EMD_CD) ? tooltipText(data.dongByCode.get(r.EMD_CD)!) : undefined}
+                  >
                     {r.이름}
                     {r.FLAGS.length > 0 && <span className="ml-1 text-[10px] text-neutral-500">{r.FLAGS.join("·")}</span>}
                   </td>

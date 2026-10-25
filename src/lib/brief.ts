@@ -101,7 +101,7 @@ export function buildDongBrief(emdCd: string): BriefDraft {
     ...(resources.length
       ? resources.map((r) => {
           const url = String(r.SOURCE_URL).split(";")[0].trim();
-          return `- ${r.NAME} (${r.TYPE}) — [출처](${url})`;
+          return `- ${r.NAME} (${r.TYPE}) · [출처](${url})`;
         })
       : ["- 등록된 자원이 없습니다 (welfare_resources.csv)"]),
     "",

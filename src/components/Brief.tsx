@@ -89,7 +89,7 @@ export default function Brief() {
         <div className="no-print flex items-center gap-2 border-b border-neutral-200 px-4 py-2.5">
           <span className="font-semibold">{brief.kind === "dong" ? "동 브리프" : "분기 브리프"}</span>
           {data?.mode === "fallback" && (
-            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] text-amber-800">AI 미연결 — 규칙 기반 요약</span>
+            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] text-amber-800">AI 미연결(규칙 기반 요약)</span>
           )}
           <div className="ml-auto flex gap-2">
             <button disabled={!data} onClick={copy} className="rounded-lg border border-neutral-300 px-3 py-1 hover:bg-neutral-50 disabled:opacity-40">

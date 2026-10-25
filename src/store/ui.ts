@@ -1,4 +1,4 @@
-// 대시보드 UI 상태 — 필터는 지도·리스트·패널 공통
+// 대시보드 UI 상태. 필터는 지도·리스트·패널 공통
 import { create } from "zustand";
 import { GROUPS, type Group, type RiskLevel } from "@/lib/constants";
 import type { Region } from "@/lib/labels";
@@ -20,7 +20,7 @@ interface UiState {
   groups: Set<Group>;
   selectedEmd: string | null;
   colorMode: ColorMode;
-  /** 우선순위 N — 지도 "상위 N 강조"와 우선순위 패널이 같이 쓴다 (5~20) */
+  /** 우선순위 N: 지도 "상위 N 강조"와 우선순위 패널이 같이 쓴다 (5~20) */
   topN: number;
   /** 지도에서 상위 N 만 원래 색으로 */
   highlightOn: boolean;

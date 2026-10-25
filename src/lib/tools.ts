@@ -352,7 +352,7 @@ function prioritize(input: Record<string, unknown>): ToolResult {
         };
       }),
     },
-    sources: [...SUMMARY_SOURCES, "dong_subtype.csv(FLAG) — exclude_flags 적용"],
+    sources: [...SUMMARY_SOURCES, "dong_subtype.csv(FLAG, exclude_flags 적용)"],
   };
 }
 

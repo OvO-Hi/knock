@@ -2,6 +2,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildDongBrief, buildQuarterBrief, fillBrief, ungroundedNumbers, type BriefDraft } from "@/lib/brief";
 import { MODEL, getClient, hasCredentials, requestParams } from "@/lib/claude";
+import { replaceDashes } from "@/lib/guard";
 import type { BetaMessageParam } from "@anthropic-ai/sdk/resources/beta/messages/messages";
 import { ToolError } from "@/lib/tools";
 
@@ -9,7 +10,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
-const FALLBACK_TAG = "(AI 미연결 — 규칙 기반 요약)";
+const FALLBACK_TAG = "(AI 미연결, 규칙 기반 요약)";
 
 interface BriefRequest {
   emd_cd?: string;
@@ -25,9 +26,10 @@ const SYSTEM = `너는 지자체 복지 담당자용 브리프의 문장 두 칸
 - 플래그(탐색지구·관찰지구·경계)나 해석 주의가 있으면 메모에 반영한다.
 - 핵심 수치의 순위는 두 가지다: "종합점수 n위"(점수 순)와 "우선순위 m위"(단계→50·60대 인구 순, 실제로 먼저 살필 순서). 현황 요약에서 둘을 구분해 쓴다.
 - 비율 값은 %로 환산하지 않고, "가장 위험한" 같은 표현을 쓰지 않는다.
+- 줄표(\u2014, \u2013)를 쓰지 않는다. 가운뎃점(·)·쉼표·괄호·마침표로 대신한다.
 - 출력 형식은 정확히 다음 두 태그만:
-<요약>현황 요약 — 3문장 이내</요약>
-<메모>담당자 메모 — 다음 조치나 확인할 점, 2문장</메모>`;
+<요약>현황 요약 (3문장 이내)</요약>
+<메모>담당자 메모 (다음 조치나 확인할 점, 2문장)</메모>`;
 
 const parseSlots = (text: string) => {
   const summary = /<요약>([\s\S]*?)<\/요약>/.exec(text)?.[1]?.trim();
@@ -46,7 +48,7 @@ async function writeSlots(draft: BriefDraft): Promise<{ summary: string; memo: s
     const slots = parseSlots(text);
     if (!slots) return null;
     const bad = ungroundedNumbers(`${slots.summary} ${slots.memo}`, draft.template);
-    if (!bad.length) return slots;
+    if (!bad.length) return { summary: replaceDashes(slots.summary), memo: replaceDashes(slots.memo) };
     console.warn(`[brief] 템플릿에 없는 숫자 (시도 ${attempt + 1}):`, bad.join(", "));
     messages.push(
       { role: "assistant", content: res.content }, // thinking 블록 포함 그대로 (append-only)

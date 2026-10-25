@@ -9,6 +9,7 @@ import type { DashboardData } from "@/lib/useDashboardData";
 import type { EmdFeatureProps } from "@/lib/api-types";
 import { GROUP_COLOR, LEVEL_COLOR, displayName } from "@/lib/labels";
 import { matchesFilter, topN } from "@/lib/selectors";
+import { tooltipHtml } from "@/lib/tooltip";
 import { useUi } from "@/store/ui";
 import Legend from "./Legend";
 
@@ -24,7 +25,7 @@ export default function Map({ data }: { data: DashboardData }) {
 
   return (
     <div className="relative h-full w-full">
-      {/* 저작권 표시는 오른쪽 위 — 하단 중앙의 대화 바·좌하단 범례와 겹치지 않게 */}
+      {/* 저작권 표시는 오른쪽 위. 하단 중앙의 대화 바·좌하단 범례와 겹치지 않게 */}
       <MapContainer center={[37.7, 127.4]} zoom={9} className="h-full w-full" zoomControl attributionControl={false} preferCanvas={false}>
         <AttributionControl position="topright" prefix='<a href="https://leafletjs.com">Leaflet</a>' />
         <TileLayer
@@ -68,7 +69,7 @@ function DongLayer({
     const d = data.dongByCode.get(code);
     layers.current.set(code, layer as L.Path);
     const label = d ? `${displayName(d)} ${d.RISK_LEVEL}단계 ${d.GROUP}` : feature.properties.EMD_NM;
-    if (d) layer.bindTooltip(`${displayName(d)} · ${d.RISK_LEVEL}단계 · ${d.GROUP}`, { sticky: true });
+    if (d) layer.bindTooltip(tooltipHtml(d), { sticky: true, className: "knock-tip" });
     layer.on("click", () => {
       if (activeRef.current.has(code)) selectRef.current(code);
     });
