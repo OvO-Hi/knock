@@ -1,13 +1,14 @@
 "use client";
 // 동 상세 패널 (CLAUDE.md §4.3). 권장 조치·연결 자원·브리프는 3·5단계에서 추가.
 import { useSyncExternalStore } from "react";
-import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import type { DongDTO } from "@/lib/api-types";
 import type { ClusterProfile, InterventionRule, LevelPolicy } from "@/lib/data";
 import type { ResourceMatch } from "@/lib/match";
-import type { RiskLevel } from "@/lib/constants";
+import type { Flag, RiskLevel } from "@/lib/constants";
 import {
   FLAG_COLOR,
+  FLAG_DESC,
   GROUP_COLOR,
   GROUP_DESC,
   GROUP_NAME,
@@ -20,6 +21,7 @@ import {
 import { VARIABLE_META, type VariableMeta } from "@/lib/variables";
 import { useUi } from "@/store/ui";
 import { RecommendedActions, ResourceList } from "./DongActions";
+import Tip from "./Tip";
 
 function Card({ title, hint, children }: { title?: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -35,9 +37,9 @@ function Card({ title, hint, children }: { title?: string; hint?: string; childr
   );
 }
 
-function Badge({ bg, children, title }: { bg: string; children: React.ReactNode; title?: string }) {
+function Badge({ bg, children }: { bg: string; children: React.ReactNode }) {
   return (
-    <span title={title} className="inline-block rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: bg, color: textOn(bg) }}>
+    <span className="inline-block rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: bg, color: textOn(bg) }}>
       {children}
     </span>
   );
@@ -55,34 +57,35 @@ function YTick({ x, y, payload, data, small }: { x?: number | string; y?: number
   const d = payload ? data[payload.index] : undefined;
   if (!d || x === undefined || y === undefined) return null;
   return (
-    <g transform={`translate(${x},${y})`}>
-      <text x={-8} y={d.meta.lowIsRisk ? -2 : 4} textAnchor="end" fontSize={small ? 11 : 13} fill="#222">
-        {d.meta.label}
-      </text>
-      {d.meta.lowIsRisk && (
-        <text x={-8} y={12} textAnchor="end" fontSize={small ? 9.5 : 10.5} fill="#888">
-          값이 낮을수록 위험
+    <Tip as="g" content={<VarTipContent d={d} />}>
+      <g transform={`translate(${x},${y})`}>
+        <text x={-8} y={d.meta.lowIsRisk ? -2 : 4} textAnchor="end" fontSize={small ? 11 : 13} fill="#222">
+          {d.meta.label}
         </text>
-      )}
-    </g>
+        {d.meta.lowIsRisk && (
+          <text x={-8} y={12} textAnchor="end" fontSize={small ? 9.5 : 10.5} fill="#888">
+            값이 낮을수록 위험
+          </text>
+        )}
+      </g>
+    </Tip>
   );
 }
 
-function VarTooltip({ active, payload }: { active?: boolean; payload?: { payload: BarDatum }[] }) {
-  if (!active || !payload?.length) return null;
-  const { meta, score, raw } = payload[0].payload;
+/** 변수 라벨 툴팁: 계산식·쉬운 말·위험 방향 */
+function VarTipContent({ d: { meta, score, raw } }: { d: BarDatum }) {
   return (
-    <div className="max-w-72 rounded-lg border border-neutral-200 bg-white p-3 text-xs shadow-md">
-      <div className="mb-1 font-semibold">
+    <>
+      <div className="font-semibold">
         {meta.label} <span className="font-normal text-neutral-500">({meta.axis})</span>
       </div>
       <div className="tabular-nums">
         단계점수 {score}점 · 원값 {raw}
       </div>
-      <div className="mt-1 text-neutral-600">계산식: {meta.formula}</div>
-      <div className="mt-1">{meta.plain}</div>
-      <div className="mt-1 text-neutral-500">{meta.lowIsRisk ? "값이 낮을수록 위험" : "값이 높을수록 위험"} · 단계점수 5 = 시군구 안 가장 위험</div>
-    </div>
+      <div className="mt-0.5 text-neutral-600">계산식: {meta.formula}</div>
+      <div className="mt-0.5">{meta.plain}</div>
+      <div className="mt-0.5 text-neutral-500">{meta.lowIsRisk ? "값이 낮을수록 위험" : "값이 높을수록 위험"} · 단계점수 5 = 시군구 안 가장 위험</div>
+    </>
   );
 }
 
@@ -120,7 +123,6 @@ function VariableBars({ dong }: { dong: DongDTO }) {
             axisLine={false}
             tick={(p) => <YTick x={p.x} y={p.y} payload={p.payload} data={data} small={narrow} />}
           />
-          <Tooltip content={<VarTooltip />} cursor={{ fill: "#f3f3f0" }} />
           <Bar dataKey="score" radius={[0, 4, 4, 0]} isAnimationActive={false}>
             {data.map((d) => (
               <Cell key={d.meta.code} fill={LEVEL_COLOR[d.score as RiskLevel]} />
@@ -204,13 +206,17 @@ function ClusterCompare({ dong, profile }: { dong: DongDTO; profile?: ClusterPro
   );
 }
 
-function flagTitle(flag: string, dong: DongDTO): string {
-  const note = dong.subtype?.NOTE;
-  if (flag === "경계") {
-    const base = `대리모델이 이 군집이라고 본 확률(P_OWN) ${dong.P_OWN.toFixed(2)}. 0.5 미만이라 인접 군집과 경계에 있는 동`;
-    return note ? `${note}\n${base}` : base;
-  }
-  return note || flag;
+/** 플래그 칩 툴팁: 플래그 뜻 한 줄 + 이 동의 NOTE */
+function FlagTip({ flag, dong }: { flag: Flag; dong: DongDTO }) {
+  return (
+    <>
+      <div>
+        <b>{flag}</b>: {FLAG_DESC[flag]}
+        {flag === "경계" && <span className="text-neutral-500"> (P_OWN {dong.P_OWN.toFixed(2)})</span>}
+      </div>
+      {dong.subtype?.NOTE && <div className="mt-0.5 text-neutral-600">{dong.subtype.NOTE}</div>}
+    </>
+  );
 }
 
 export default function DongPanel({
@@ -252,18 +258,42 @@ export default function DongPanel({
           <Badge bg={levelColor}>
             위험도 {dong.RISK_LEVEL}단계 ({PRIORITY_LABEL[dong.RISK_LEVEL]})
           </Badge>
-          <Badge bg={GROUP_COLOR[dong.GROUP]}>
-            {dong.GROUP} {GROUP_NAME[dong.GROUP]}
-          </Badge>
+          <Tip
+            content={
+              <>
+                <b>
+                  {dong.GROUP} {GROUP_NAME[dong.GROUP]}
+                </b>
+                : {GROUP_DESC[dong.GROUP]}
+                {profile && <span className="text-neutral-500"> · {profile.N_DONG}개 동</span>}
+              </>
+            }
+          >
+            <Badge bg={GROUP_COLOR[dong.GROUP]}>
+              {dong.GROUP} {GROUP_NAME[dong.GROUP]}
+            </Badge>
+          </Tip>
           {dong.subtype && (
-            <span className="rounded-md border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700">
-              {dong.subtype.SUBTYPE_NM}
-            </span>
+            <Tip
+              content={
+                rule?.CORE_ACTION ? (
+                  <>
+                    <b>핵심 대응</b>: {rule.CORE_ACTION}
+                  </>
+                ) : (
+                  "핵심 대응: 규칙표에 기재 없음"
+                )
+              }
+            >
+              <span className="inline-block rounded-md border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700">
+                {dong.subtype.SUBTYPE_NM}
+              </span>
+            </Tip>
           )}
           {dong.subtype?.FLAGS.map((f) => (
-            <Badge key={f} bg={FLAG_COLOR[f]} title={flagTitle(f, dong)}>
-              {f === "경계" ? `경계 동(군집 확률 ${dong.P_OWN.toFixed(2)})` : f}
-            </Badge>
+            <Tip key={f} content={<FlagTip flag={f} dong={dong} />}>
+              <Badge bg={FLAG_COLOR[f]}>{f === "경계" ? `경계 동(군집 확률 ${dong.P_OWN.toFixed(2)})` : f}</Badge>
+            </Tip>
           ))}
         </div>
         <p className="mt-1.5 text-neutral-600">{GROUP_DESC[dong.GROUP]}</p>
